@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { AuthUser } from '../domain/models';
 import { loadRuntimeConfig } from './runtime-config';
@@ -10,6 +11,8 @@ export interface AuthGateway {
 }
 @Injectable({ providedIn: 'root' })
 export class AuthService implements AuthGateway {
+  private readonly router = inject(Router);
+  private readonly returnPathKey = 'middagstipset.auth.return-path';
   readonly user = signal<AuthUser | null>(null);
   readonly ready = signal(false);
   readonly configured = signal(false);
@@ -26,19 +29,30 @@ export class AuthService implements AuthGateway {
       this.client.auth.onAuthStateChange((_event, session) => {
         const user = session?.user;
         this.user.set(user ? { id: user.id, displayName: String(user.user_metadata['full_name'] ?? 'Mitt konto'), email: user.email } : null);
+        if (user) this.restoreReturnPath();
       });
       const { data, error } = await this.client.auth.getSession();
       if (error) throw error;
       const user = data.session?.user;
       this.user.set(user ? { id: user.id, displayName: String(user.user_metadata['full_name'] ?? 'Mitt konto'), email: user.email } : null);
+      if (user) this.restoreReturnPath();
     } catch { this.error.set('Kunde inte ansluta till kontot. Kontrollera inställningarna och försök igen.'); }
     finally { this.ready.set(true); }
   }
   async signInWithGoogle(): Promise<void> {
     this.error.set('');
     if (!this.client) { this.error.set('Google-inloggning aktiveras när Supabase är anslutet. Du kan använda demoläget så länge.'); return; }
+    try { sessionStorage.setItem(this.returnPathKey, this.router.url || '/idag'); } catch { /* Route restoration is optional if browser storage is blocked. */ }
     const { error } = await this.client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${location.origin}${location.pathname}` } });
-    if (error) this.error.set('Google-inloggningen kunde inte starta. Försök igen.');
+    if (error) {
+      try { sessionStorage.removeItem(this.returnPathKey); } catch { /* Ignore unavailable browser storage. */ }
+      this.error.set('Google-inloggningen kunde inte starta. Försök igen.');
+    }
+  }
+  private restoreReturnPath(): void {
+    let path: string | null = null;
+    try { path = sessionStorage.getItem(this.returnPathKey); sessionStorage.removeItem(this.returnPathKey); } catch { /* Ignore unavailable browser storage. */ }
+    if (path?.startsWith('/') && !path.startsWith('//')) queueMicrotask(() => void this.router.navigateByUrl(path!));
   }
   async signOut(): Promise<void> {
     const { error } = await this.client!.auth.signOut();
