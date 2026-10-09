@@ -1,0 +1,156 @@
+<section class="editor-page">
+  <header class="editor-header">
+    <button class="back-button" type="button" (click)="cancelled.emit()">
+      <span aria-hidden="true">←</span> Avbryt
+    </button>
+    <p class="eyebrow"><app-icon name="book" /> DITT RECEPT</p>
+    <h1>{{ recipe() ? 'Redigera eget recept' : 'Skapa eget recept' }}</h1>
+    <p class="intro">Spara en rätt i ditt receptbibliotek. Kostuppgifter läggs bara till när de har angetts här.</p>
+    @if (recipe()) {
+      <p class="intro">Ändringarna används också för redan planerade middagar som inte markerats som lagade, och inköpsmängder räknas om. Lagad historik behålls.</p>
+    }
+    @if (importDraft()) {
+      <p class="gluten-guidance">Importerat innehåll är inte verifierat. Kostbehov och glutenstatus har inte importerats; kontrollera varje uppgift innan du sparar.</p>
+      @if (importDraft()!.warnings.length) {
+        <ul class="import-warnings" aria-label="Uppgifter att komplettera">
+          @for (warning of importDraft()!.warnings; track warning) { <li>{{ warning }}</li> }
+        </ul>
+      }
+    }
+  </header>
+
+  <form class="editor-form" novalidate (ngSubmit)="save()">
+    <section class="form-section" aria-labelledby="recipe-basics-title">
+      <div class="section-title">
+        <span class="section-number" aria-hidden="true">1</span>
+        <div><h2 id="recipe-basics-title">Om receptet</h2><p>Namn, beskrivning och grunduppgifter.</p></div>
+      </div>
+
+      <div class="form-grid">
+        <label class="field full-width" for="recipe-name">
+          <span>Receptnamn <span class="required-mark" aria-hidden="true">*</span></span>
+          <input id="recipe-name" name="name" type="text" maxlength="100" required autocomplete="off" [(ngModel)]="name" placeholder="Till exempel: Rostad blomkål med tahinisås" />
+        </label>
+
+        <label class="field full-width" for="recipe-description">
+          <span>Kort beskrivning <span class="required-mark" aria-hidden="true">*</span></span>
+          <textarea id="recipe-description" name="description" rows="3" maxlength="400" required [(ngModel)]="description" placeholder="Vad gör rätten god och värd att laga?" ></textarea>
+        </label>
+
+        <label class="field" for="recipe-servings">
+          <span>Standardportioner <span class="required-mark" aria-hidden="true">*</span></span>
+          <input id="recipe-servings" name="servings" type="number" min="1" max="100" step="1" required [(ngModel)]="servings" />
+        </label>
+        <label class="field" for="recipe-main-ingredient">
+          <span>Huvudingrediens</span>
+          <select id="recipe-main-ingredient" name="mainIngredient" [(ngModel)]="mainIngredient">
+            @for (main of mainIngredients; track main) { <option [ngValue]="main">{{ mainIngredientLabels[main] }}</option> }
+          </select>
+        </label>
+        <label class="field" for="recipe-total-time">
+          <span>Total tid i minuter <span class="required-mark" aria-hidden="true">*</span></span>
+          <input id="recipe-total-time" name="totalMinutes" type="number" min="1" max="1440" step="1" required [(ngModel)]="totalMinutes" />
+        </label>
+        <label class="field" for="recipe-active-time">
+          <span>Aktiv tid i minuter <span class="required-mark" aria-hidden="true">*</span></span>
+          <input id="recipe-active-time" name="activeMinutes" type="number" min="1" max="1440" step="1" required [(ngModel)]="activeMinutes" />
+        </label>
+      </div>
+
+      <label class="check-field vegetarian-field">
+        <input name="vegetarian" type="checkbox" [(ngModel)]="vegetarian" />
+        <span><strong>Receptet är vegetariskt</strong><small>Markera bara om alla ingredienser i receptet passar vegetarisk kost.</small></span>
+      </label>
+    </section>
+
+    <section class="form-section" aria-labelledby="ingredients-title">
+      <div class="section-title">
+        <span class="section-number" aria-hidden="true">2</span>
+        <div><h2 id="ingredients-title">Ingredienser</h2><p>Ange mängd, enhet, kategori och glutenstatus för varje rad.</p></div>
+      </div>
+
+      <p class="gluten-guidance">Markera glutenfri endast när du har kontrollerat ingrediensen och dess märkning. Om någon rad är okänd eller innehåller gluten blir receptet inte rekommenderat för glutenfri kost.</p>
+
+      <div class="ingredient-rows">
+        @for (ingredient of ingredients; track $index; let index = $index) {
+          <fieldset class="ingredient-card">
+            <legend>Ingrediens {{ index + 1 }}</legend>
+            <div class="ingredient-grid">
+              <label class="field ingredient-name-field" [for]="'ingredient-name-' + index">
+                <span>Namn <span class="required-mark" aria-hidden="true">*</span></span>
+                <input [id]="'ingredient-name-' + index" [name]="'ingredient-name-' + index" type="text" required maxlength="80" [(ngModel)]="ingredient.name" placeholder="Ingrediens" />
+              </label>
+              <label class="field quantity-field" [for]="'ingredient-quantity-' + index">
+                <span>Mängd <span class="required-mark" aria-hidden="true">*</span></span>
+                <input [id]="'ingredient-quantity-' + index" [name]="'ingredient-quantity-' + index" type="number" min="0.01" step="0.01" required [ngModel]="ingredient.quantity" (ngModelChange)="ingredient.quantity = $event; ingredient.quantityHint = ''" />
+              </label>
+              <label class="field unit-field" [for]="'ingredient-unit-' + index">
+                <span>Enhet</span>
+                <select [id]="'ingredient-unit-' + index" [name]="'ingredient-unit-' + index" [ngModel]="ingredient.unit" (ngModelChange)="ingredient.unit = $event; ingredient.needsUnitReview = false">
+                  <option [ngValue]="null">Välj enhet…</option>
+                  @for (unit of units; track unit) { <option [ngValue]="unit">{{ unit }}</option> }
+                </select>
+                @if (ingredient.needsUnitReview) { <small class="field-warning">Välj och kontrollera enhet före sparande.</small> }
+              </label>
+              <label class="field category-field" [for]="'ingredient-category-' + index">
+                <span>Kategori</span>
+                <select [id]="'ingredient-category-' + index" [name]="'ingredient-category-' + index" [(ngModel)]="ingredient.category">
+                  @for (category of categories; track category) { <option [ngValue]="category">{{ category }}</option> }
+                </select>
+              </label>
+              <label class="field gluten-field" [for]="'ingredient-gluten-' + index">
+                <span>Glutenstatus</span>
+                <select [id]="'ingredient-gluten-' + index" [name]="'ingredient-gluten-' + index" [(ngModel)]="ingredient.glutenStatus">
+                  <option value="unknown">Okänd / inte kontrollerad</option>
+                  <option value="contains">Innehåller gluten</option>
+                  <option value="free">Glutenfri – kontrollerad</option>
+                </select>
+              </label>
+            </div>
+            @if (ingredient.quantityHint) { <p class="field-warning">Mängd att granska: {{ ingredient.quantityHint }}. Ange en tydlig mängd.</p> }
+            @if (ingredients.length > 1) {
+              <button class="remove-button" type="button" (click)="removeIngredient(index)">Ta bort ingrediens</button>
+            }
+          </fieldset>
+        }
+      </div>
+      <button class="add-button" type="button" (click)="addIngredient()"><span aria-hidden="true">＋</span> Lägg till ingrediens</button>
+    </section>
+
+    <section class="form-section" aria-labelledby="steps-title">
+      <div class="section-title">
+        <span class="section-number" aria-hidden="true">3</span>
+        <div><h2 id="steps-title">Tillagning</h2><p>Lägg till stegen i den ordning de ska göras.</p></div>
+      </div>
+
+      <ol class="step-rows">
+        @for (step of steps; track $index; let index = $index) {
+          <li>
+            <span class="step-index" aria-hidden="true">{{ index + 1 }}</span>
+            <label class="field" [for]="'recipe-step-' + index">
+              <span class="sr-only">Steg {{ index + 1 }}</span>
+              <textarea [id]="'recipe-step-' + index" [name]="'recipe-step-' + index" rows="2" maxlength="500" [(ngModel)]="steps[index]" placeholder="Beskriv vad som ska göras" ></textarea>
+            </label>
+            @if (importDraft()) {
+              <label class="step-review"><input type="checkbox" [checked]="stepReviewed[index]" (change)="stepReviewed[index] = $any($event.target).checked" /> Jag har granskat steget</label>
+            }
+            @if (steps.length > 1) {
+              <button class="remove-step" type="button" [attr.aria-label]="'Ta bort steg ' + (index + 1)" (click)="removeStep(index)">×</button>
+            }
+          </li>
+        }
+      </ol>
+      <button class="add-button" type="button" (click)="addStep()"><span aria-hidden="true">＋</span> Lägg till steg</button>
+    </section>
+
+    @if (submitted && !isValid) {
+      <p class="form-error" role="alert">Fyll i namn och beskrivning, giltiga tider och portioner, minst en ingrediens med mängd samt minst ett tillagningssteg.</p>
+    }
+
+    <footer class="form-actions">
+      <button class="cancel-button" type="button" (click)="cancelled.emit()">Avbryt</button>
+      <button class="save-button" type="submit"><app-icon name="book" /> {{ recipe() ? 'Spara ändringar' : 'Spara recept' }}</button>
+    </footer>
+  </form>
+</section>
+

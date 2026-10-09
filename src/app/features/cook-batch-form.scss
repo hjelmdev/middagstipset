@@ -1,0 +1,135 @@
+:host { display: block; }
+
+.batch-form {
+  display: grid;
+  gap: 17px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+}
+
+.batch-form-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.batch-form-heading .eyebrow { margin-bottom: 5px; }
+.batch-form-heading h2 { font-size: 1.25rem; }
+.batch-form-heading p:last-child { margin-top: 6px; color: var(--muted); font-size: .9rem; }
+
+.close-form {
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.batch-needs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.batch-needs legend {
+  width: 100%;
+  margin-bottom: 8px;
+  font-size: .92rem;
+  font-weight: 700;
+}
+
+.batch-needs label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--cream);
+  font-size: .9rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.batch-needs input { width: 20px; height: 20px; margin: 0; accent-color: var(--forest); }
+
+.batch-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(155px, .8fr) minmax(150px, .7fr);
+  gap: 12px;
+}
+
+.batch-fields label { display: grid; gap: 7px; min-width: 0; font-size: .9rem; font-weight: 700; }
+.batch-fields input,
+.batch-fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: .96rem;
+}
+
+.batch-recipe-note,
+.batch-safety-note,
+.batch-error {
+  padding: 11px 13px;
+  border-radius: 9px;
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+.batch-recipe-note { background: var(--forest-soft); color: var(--ink); }
+.batch-safety-note { background: var(--cream); color: var(--muted); }
+.batch-error { background: #fff1ed; color: #8b2e20; }
+
+.batch-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.batch-form-actions button {
+  min-height: 46px;
+  padding: 9px 15px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: .92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.batch-form-actions .create-button { border-color: var(--forest); background: var(--forest); color: #fff; }
+.batch-form-actions button:disabled { opacity: .5; cursor: not-allowed; }
+
+.batch-form :focus-visible { outline: 3px solid var(--forest); outline-offset: 3px; }
+
+@media (max-width: 620px) {
+  .batch-fields { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 360px) {
+  .batch-form { padding: 13px; }
+  .batch-form-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .batch-form-actions button { padding-inline: 8px; }
+}

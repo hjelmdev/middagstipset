@@ -1,0 +1,223 @@
+<article class="recipe-detail" aria-labelledby="recipe-title">
+  <header class="recipe-header">
+    <button class="icon-button close-button" type="button" aria-label="Stäng receptet" (click)="closed.emit()">
+      <span aria-hidden="true">×</span>
+    </button>
+
+    <figure class="recipe-visual" [style.--recipe-color]="recipe().color">
+      <img [src]="recipe().image" [alt]="recipe().imageAlt" />
+      <figcaption>{{ imageKindLabel }}</figcaption>
+    </figure>
+
+    <div class="recipe-heading">
+      <div class="tag-list" aria-label="Receptetiketter">
+        @for (tag of recipe().tags; track tag) {
+          <span class="tag">{{ tag }}</span>
+        }
+      </div>
+      <h1 id="recipe-title">{{ recipe().name }}</h1>
+      <p class="description">{{ recipe().description }}</p>
+      <div class="recipe-meta" aria-label="Receptinformation">
+        <span><strong>{{ recipe().totalMinutes }}</strong> min totalt</span>
+        <span><strong>{{ recipe().activeMinutes }}</strong> min aktivt</span>
+        <span><strong>{{ servingCount() }}</strong> {{ servingCount() === 1 ? 'portion' : 'portioner' }}</span>
+      </div>
+      <div class="dietary-badges" aria-label="Kostinformation">
+        @if (showGlutenFreeBadge()) {
+          <span class="dietary-badge">Glutenfritt recept</span>
+        }
+        @if (recipe().dietaryNeeds.includes('vegetarian')) {
+          <span class="dietary-badge">Vegetariskt</span>
+        }
+        @if (needsGlutenFree() && !recipe().dietaryNeeds.includes('gluten-free')) {
+          <span class="dietary-badge needs-adaptation">Anpassning behövs för glutenfritt</span>
+        }
+        @if (hasVegetarianNeed() && !recipe().dietaryNeeds.includes('vegetarian')) {
+          <span class="dietary-badge needs-adaptation">Kontrollera vegetariskt alternativ</span>
+        }
+      </div>
+    </div>
+  </header>
+
+  <div class="recipe-columns">
+    <section class="ingredients-panel" aria-labelledby="ingredients-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">För middagen</p>
+          <h2 id="ingredients-title">Ingredienser</h2>
+        </div>
+        <span class="serving-count">{{ servingCount() }} port.</span>
+      </div>
+
+      @if (!supportsDietaryNeeds()) {
+        <aside class="dietary-note unsupported-note" role="alert">
+          <span class="note-icon" aria-hidden="true">!</span>
+          <div>
+            <strong>Receptet passar inte valda kostbehov</strong>
+            <p>Ingredienserna visas inte eftersom receptet saknar en verifierbar anpassning för alla i sällskapet. Välj ett annat recept.</p>
+          </div>
+        </aside>
+      }
+
+      @if (needsGlutenFree()) {
+        <aside class="dietary-note" aria-label="Viktig information om gluten">
+          <span class="note-icon" aria-hidden="true">!</span>
+          <div>
+            <strong>Glutenfri anpassning</strong>
+            @if (recipe().glutenStrategy === 'unsupported') {
+              <p>Receptet saknar en angiven glutenfri anpassning. Välj ett annat recept.</p>
+            } @else if (recipe().glutenStrategy === 'split-component') {
+              <p>Laga den glutenfria delen i ett separat, rent kärl. Använd egna redskap och håll råvaror och durkslag åtskilda.</p>
+            } @else if (recipe().glutenStrategy === 'whole-dish') {
+              <p>Använd glutenfria alternativ till alla ingredienser som innehåller gluten, till exempel mjöl, pasta eller plattor. Anpassa hela rätten och håll redskap och tillagning åtskilda.</p>
+            } @else {
+              <p>Ingredienserna är märkta som naturligt glutenfria. Kontrollera förpackningarna och undvik kontakt med gluten under tillagningen.</p>
+            }
+            <p>Kontrollera ingrediensernas märkning och förpackningar före tillagning.</p>
+            <p class="safety-copy">Informationen är ett stöd och ingen garanti mot spår eller kontaminering.</p>
+          </div>
+        </aside>
+      }
+
+      <ul class="ingredient-list">
+        @for (ingredient of scaledIngredients(); track ingredient.id) {
+          <li [class.is-checked]="isIngredientChecked(ingredient)">
+            <label class="ingredient-row">
+              <input
+                type="checkbox"
+                [checked]="isIngredientChecked(ingredient)"
+                (change)="toggleIngredient(ingredient)"
+                [attr.aria-label]="'Markera ' + ingredientName(ingredient) + ' som klar'"
+              />
+              <span class="ingredient-copy">
+                <span class="ingredient-name">{{ ingredient.name }}</span>
+              </span>
+              <span class="ingredient-quantity">{{ formatQuantity(ingredient.quantity) }} {{ ingredient.unit }}</span>
+            </label>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="method-panel" aria-labelledby="method-title">
+      <div class="section-heading method-heading">
+        <div>
+          <p class="eyebrow">Så gör du</p>
+          <h2 id="method-title">Tillagning</h2>
+        </div>
+        <div class="view-switch" role="group" aria-label="Visningsläge för tillagning">
+          <button type="button" [class.active]="viewMode() === 'compact'" [attr.aria-pressed]="viewMode() === 'compact'" (click)="setViewMode('compact')">Översikt</button>
+          <button type="button" [class.active]="viewMode() === 'stepwise'" [attr.aria-pressed]="viewMode() === 'stepwise'" (click)="setViewMode('stepwise')">Steg för steg</button>
+        </div>
+        @if (wakeLockSupported()) {
+          <button class="wake-lock-button" type="button" [attr.aria-pressed]="wakeLockEnabled()" (click)="toggleWakeLock()">
+            {{ wakeLockEnabled() ? 'Skärmen hålls vaken' : 'Håll skärmen vaken' }}
+          </button>
+        }
+      </div>
+      @if (wakeLockMessage()) {
+        <p class="wake-lock-message" role="status">{{ wakeLockMessage() }}</p>
+      }
+      @if (hasTimers()) {
+        <p class="timer-lifecycle-note">Timers stannar när receptet stängs.</p>
+      }
+
+      @if (needsGlutenFree() && recipe().glutenStrategy === 'split-component') {
+        <p class="method-reminder">Tillaga eventuell glutenfri pasta separat i eget kokkärl med egna redskap.</p>
+      }
+      @if (needsGlutenFree() && recipe().glutenStrategy === 'whole-dish') {
+        <p class="method-reminder">Använd glutenfria alternativ till alla ingredienser med gluten i hela rätten, även mjöl, pasta eller plattor.</p>
+      }
+
+      @if (viewMode() === 'stepwise' && backgroundTimers().length > 0) {
+        <aside class="background-timers" aria-label="Övriga timers">
+          @for (timer of backgroundTimers(); track timer.stepIndex) {
+            <div class="background-timer-row">
+              <span class="timer-label">Steg {{ timer.stepIndex + 1 }}</span>
+              <span class="timer-countdown">{{ timerDisplay(timer.stepIndex, timer.minutes) }}</span>
+              <div class="timer-actions">
+                @if (timerStatus(timer.stepIndex) === 'running') {
+                  <button type="button" class="timer-button pause-timer" (click)="pauseTimer(timer.stepIndex, timer.minutes)">Pausa</button>
+                } @else if (timerStatus(timer.stepIndex) !== 'done') {
+                  <button type="button" class="timer-button start-timer" (click)="startTimer(timer.stepIndex, timer.minutes)">{{ timerStatus(timer.stepIndex) === 'paused' ? 'Fortsätt' : 'Starta timer' }}</button>
+                }
+                <button type="button" class="timer-button reset-timer" (click)="resetTimer(timer.stepIndex, timer.minutes)">Återställ</button>
+                @if (timerStatus(timer.stepIndex) === 'done') {
+                  <span class="timer-complete" role="status">Tiden är klar</span>
+                }
+              </div>
+            </div>
+          }
+        </aside>
+      }
+
+      @if (viewMode() === 'compact') {
+        <ol class="step-list">
+          @for (step of recipe().steps; track $index; let index = $index) {
+            <li>
+              <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
+              <div class="step-copy">
+                <p>{{ step.text }}</p>
+                @if (step.timerMinutes) {
+                  <div class="step-timer">
+                    <div class="step-timer-heading">
+                      <span class="timer-label">Timer · steg {{ index + 1 }}</span>
+                      <span class="timer-countdown">{{ timerDisplay(index, step.timerMinutes) }}</span>
+                    </div>
+                    <div class="timer-actions">
+                      @if (timerStatus(index) === 'running') {
+                        <button type="button" class="timer-button pause-timer" (click)="pauseTimer(index, step.timerMinutes)">Pausa</button>
+                      } @else if (timerStatus(index) !== 'done') {
+                        <button type="button" class="timer-button start-timer" (click)="startTimer(index, step.timerMinutes)">{{ timerStatus(index) === 'paused' ? 'Fortsätt' : 'Starta timer' }}</button>
+                      }
+                      <button type="button" class="timer-button reset-timer" (click)="resetTimer(index, step.timerMinutes)">Återställ</button>
+                      @if (timerStatus(index) === 'done') {
+                        <span class="timer-complete" role="status">Tiden är klar</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      } @else if (recipe().steps.length > 0) {
+        <div class="guided-step" aria-live="polite" aria-atomic="true">
+          <p class="step-progress">Steg {{ currentStepNumber }} av {{ recipe().steps.length }}</p>
+          <p class="guided-step-text">{{ recipe().steps[currentStepIndex()].text }}</p>
+        </div>
+        @if (recipe().steps[currentStepIndex()].timerMinutes; as timerMinutes) {
+          <div class="step-timer guided-timer">
+            <div class="step-timer-heading">
+              <span class="timer-label">Timer · steg {{ currentStepNumber }}</span>
+              <span class="timer-countdown">{{ timerDisplay(currentStepIndex(), timerMinutes) }}</span>
+            </div>
+            <div class="timer-actions">
+              @if (timerStatus(currentStepIndex()) === 'running') {
+                <button type="button" class="timer-button pause-timer" (click)="pauseTimer(currentStepIndex(), timerMinutes)">Pausa</button>
+              } @else if (timerStatus(currentStepIndex()) !== 'done') {
+                <button type="button" class="timer-button start-timer" (click)="startTimer(currentStepIndex(), timerMinutes)">{{ timerStatus(currentStepIndex()) === 'paused' ? 'Fortsätt' : 'Starta timer' }}</button>
+              }
+              <button type="button" class="timer-button reset-timer" (click)="resetTimer(currentStepIndex(), timerMinutes)">Återställ</button>
+              @if (timerStatus(currentStepIndex()) === 'done') {
+                <span class="timer-complete" role="status">Tiden är klar</span>
+              }
+            </div>
+          </div>
+        }
+        <nav class="step-navigation" aria-label="Stegnavigering">
+          <button type="button" class="secondary-button" [disabled]="currentStepIndex() === 0" (click)="previousStep()">Föregående</button>
+          <button type="button" class="primary-button" [disabled]="currentStepIndex() >= recipe().steps.length - 1" (click)="nextStep()">Nästa steg</button>
+        </nav>
+      } @else {
+        <p class="empty-method">Tillagningssteg saknas för det här receptet.</p>
+      }
+
+      @if (canMarkCooked() && supportsDietaryNeeds()) {
+        <button type="button" class="cooked-button" (click)="cooked.emit()">
+          <span aria-hidden="true">✓</span> Markera som lagat
+        </button>
+      }
+    </section>
+  </div>
+</article>

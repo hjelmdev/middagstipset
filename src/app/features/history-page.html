@@ -1,0 +1,85 @@
+@if (selectedRecipe(); as recipe) {
+  <app-recipe-detail
+    [recipe]="recipe"
+    [people]="people()"
+    [extraPortions]="extraPortions()"
+    [canMarkCooked]="false"
+    (closed)="closeRecipe()"
+  />
+} @else {
+  <section class="history-page" aria-label="Middagshistorik">
+    <header class="history-header">
+      <div>
+        <p class="eyebrow">TILLBAKA VID BORDET</p>
+        <h1>Middagshistorik</h1>
+        <p class="intro-copy">Se vad som faktiskt lagats och vilka middagar som tidigare varit planerade.</p>
+      </div>
+      <a class="back-link" routerLink="/planera">Till planeringen</a>
+    </header>
+
+    <div class="history-toolbar">
+      <div class="filter-switch" role="group" aria-label="Filtrera middagshistorik">
+        <button type="button" [class.active]="filter() === 'cooked'" [attr.aria-pressed]="filter() === 'cooked'" (click)="filter.set('cooked')">Lagade</button>
+        <button type="button" [class.active]="filter() === 'all'" [attr.aria-pressed]="filter() === 'all'" (click)="filter.set('all')">Alla tidigare planer</button>
+      </div>
+    </div>
+
+    @if (entries().length > 0) {
+      <ol class="history-list" aria-label="Tidigare middagar">
+        @for (entry of entries(); track entry.meal.id) {
+          <li>
+            @if (entry.recipe) {
+              <button class="history-entry" type="button" (click)="open(entry)" [attr.aria-label]="'Öppna recept: ' + entry.name + ', ' + formatDate(entry.date)">
+                @if (entry.image) {
+                  <img class="entry-image" [src]="entry.image" [alt]="entry.imageAlt ?? ''" loading="lazy" />
+                } @else {
+                  <span class="entry-image image-placeholder" aria-hidden="true"><span>✳</span></span>
+                }
+                <span class="entry-copy">
+                  <span class="entry-date">{{ formatDate(entry.date) }}</span>
+                  <span class="entry-name">{{ entry.name }}</span>
+                  <span class="entry-meta">{{ entry.portions }} {{ entry.portions === 1 ? 'portion' : 'portioner' }}</span>
+                </span>
+                <span class="entry-status" [class.cooked]="entry.meal.status === 'cooked'">
+                  {{ entry.meal.status === 'cooked' ? 'Lagad' : 'Planerad · inte markerad som lagad' }}
+                </span>
+              </button>
+            } @else {
+              <div class="history-entry unavailable-entry">
+                @if (entry.image) {
+                  <img class="entry-image" [src]="entry.image" [alt]="entry.imageAlt ?? ''" loading="lazy" />
+                } @else {
+                  <span class="entry-image image-placeholder" aria-hidden="true"><span>✳</span></span>
+                }
+                <span class="entry-copy">
+                  <span class="entry-date">{{ formatDate(entry.date) }}</span>
+                  <span class="entry-name">{{ entry.name }}</span>
+                  <span class="entry-meta">{{ entry.portions }} {{ entry.portions === 1 ? 'portion' : 'portioner' }} · Receptet är inte längre tillgängligt</span>
+                </span>
+                <span class="entry-status" [class.cooked]="entry.meal.status === 'cooked'">
+                  {{ entry.meal.status === 'cooked' ? 'Lagad' : 'Planerad · inte markerad som lagad' }}
+                </span>
+              </div>
+            }
+          </li>
+        }
+      </ol>
+    } @else if (filter() === 'cooked') {
+      <section class="empty-state" aria-live="polite">
+        <span class="empty-icon" aria-hidden="true">✓</span>
+        <h2>Inga middagar markerade som lagade än</h2>
+        <p>När du markerar en planerad middag som lagad hittar du den här.</p>
+        <a routerLink="/planera">Till planeringen</a>
+      </section>
+    } @else {
+      <section class="empty-state" aria-live="polite">
+        <span class="empty-icon" aria-hidden="true">⌂</span>
+        <h2>Ingen tidigare middag ännu</h2>
+        <p>Tidigare planerade middagar och tillagningar visas här när datumet har passerat.</p>
+        <a routerLink="/planera">Till planeringen</a>
+      </section>
+    }
+  </section>
+}
+
+

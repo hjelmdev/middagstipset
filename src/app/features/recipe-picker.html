@@ -1,0 +1,63 @@
+<section class="picker" aria-labelledby="picker-title">
+  <header class="picker-header">
+    <button class="back-button" type="button" aria-label="Stäng receptväljaren" (click)="closed.emit()">
+      <span aria-hidden="true">←</span>
+      <span>Tillbaka</span>
+    </button>
+    <p class="eyebrow">{{ formatDate(meal().date) }}</p>
+    <h1 id="picker-title" tabindex="-1">Välj middag till {{ weekday() }}</h1>
+    <p class="picker-description">Välj ett recept till den här dagen.</p>
+  </header>
+
+  <label class="search-field" for="recipe-search">
+    <span aria-hidden="true">⌕</span>
+    <input
+      id="recipe-search"
+      aria-label="Sök recept eller tagg"
+      type="search"
+      placeholder="Sök recept eller tagg"
+      autocomplete="off"
+      [value]="query()"
+      (input)="onSearchInput($event)"
+    />
+  </label>
+
+  @if (filteredRecipes().length > 0) {
+    <ul class="recipe-list" aria-label="Recept att välja mellan">
+      @for (recipe of filteredRecipes(); track recipe.id; let index = $index) {
+        <li>
+          <article class="recipe-option">
+            <div class="recipe-image-wrap" [style.--recipe-color]="recipe.color">
+              <img [src]="recipe.image" [alt]="recipe.imageAlt" [loading]="index < 3 ? 'eager' : 'lazy'" />
+              <span class="image-kind">{{ imageKindLabel(recipe) }}</span>
+            </div>
+            <div class="recipe-copy">
+              <div class="recipe-title-row">
+                <h2>{{ recipe.name }}</h2>
+                <span class="duration">{{ recipe.totalMinutes }} min</span>
+              </div>
+              <p>{{ recipe.description }}</p>
+              @if (needsMoreTime(recipe)) {
+                <p class="time-note">Tar längre tid än dagens gräns på {{ meal().maxMinutes }} min.</p>
+              }
+              <button class="choose-button" type="button" (click)="choose(recipe)">
+                {{ needsMoreTime(recipe) ? 'Välj och höj max tid till ' + recommendedMaxTime(recipe) + ' min' : 'Välj middag' }}
+              </button>
+            </div>
+          </article>
+        </li>
+      }
+    </ul>
+  } @else {
+    <section class="empty-state" aria-live="polite">
+      <span class="empty-mark" aria-hidden="true">⌕</span>
+      @if (query().trim()) {
+        <h2>Inga recept matchar sökningen</h2>
+        <p>Prova ett annat receptnamn eller en tagg.</p>
+      } @else {
+        <h2>Inga recept tillgängliga</h2>
+        <p>Det finns inga recept att välja för den här dagen just nu.</p>
+      }
+    </section>
+  }
+</section>

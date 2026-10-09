@@ -1,0 +1,86 @@
+<section class="plan-overview" aria-labelledby="plan-overview-title">
+  <div class="overview-main">
+    <div class="overview-copy">
+      <p class="overview-kicker">PLANERING</p>
+      <h2 id="plan-overview-title">Kommande middagar</h2>
+      <p class="overview-period">{{ rangeLabel() }}</p>
+      <div class="overview-status" aria-live="polite">
+        <strong>{{ mealCountLabel }}</strong>
+        @if (missingCount() > 0) {
+          <span class="missing-count">{{ missingCount() }} {{ missingCount() === 1 ? 'middag saknas' : 'middagar saknas' }}</span>
+        } @else {
+          <span class="complete-count">Alla dagar har ett förslag</span>
+        }
+      </div>
+      <p class="generation-summary">Befintliga middagar behålls.</p>
+    </div>
+
+    <div class="overview-feature">
+      <div class="overview-image">
+        @if (recipe(); as currentRecipe) {
+          <img [src]="currentRecipe.image" [alt]="currentRecipe.imageAlt">
+          @if (currentRecipe.imageKind === 'ai-generated') {
+            <span class="image-kind">AI-bild</span>
+          }
+        } @else {
+          <span class="image-placeholder">Välj ett förslag i planen</span>
+        }
+      </div>
+      @if (recipe(); as currentRecipe) {
+        <div class="featured-copy">
+          <span class="featured-label">{{ currentRecipe.totalMinutes }} min</span>
+          <strong>{{ currentRecipe.name }}</strong>
+          <span>{{ currentRecipe.description }}</span>
+        </div>
+      }
+    </div>
+
+    <button class="generate-button" type="button" (click)="generated.emit()" [disabled]="generationDisabled()">
+      {{ generationLabel() }}
+    </button>
+  </div>
+
+  <details class="plan-controls">
+    <summary>
+      <span>Anpassa förslagen</span>
+      <small>{{ filtersSummary() }}</small>
+    </summary>
+    <div class="controls-content">
+      <div class="control-grid">
+        <label class="filter-field">
+          <span class="field-label">Kost</span>
+          <span class="checkbox-control">
+            <input type="checkbox" [checked]="settings().vegetarianOnly" (change)="setVegetarian($any($event.target).checked)">
+            <span>Vegetariskt</span>
+          </span>
+        </label>
+        <label class="filter-field">
+          <span class="field-label">Urval</span>
+          <span class="checkbox-control">
+            <input type="checkbox" [checked]="settings().favoritesOnly" (change)="setFavorites($any($event.target).checked)">
+            <span>Favoriter</span>
+          </span>
+        </label>
+        <label class="control-select">
+          <span>Max tillagningstid</span>
+          <select [ngModel]="settings().maxMinutes ?? ''" (ngModelChange)="setMaxMinutes($event)">
+            <option value="">Ingen extra tidsgräns</option>
+            @for (minutes of timeLimits; track minutes) { <option [value]="minutes">{{ minutes }} minuter</option> }
+            @if (settings().maxMinutes !== null && !timeLimits.includes(settings().maxMinutes!)) {
+              <option [value]="settings().maxMinutes">{{ settings().maxMinutes }} minuter</option>
+            }
+          </select>
+        </label>
+        <label class="control-select period-select">
+          <span>Planeringsperiod</span>
+          <select [ngModel]="planningDays()" (ngModelChange)="setPlanningDays($event)">
+            @for (days of dayOptions; track days) {
+              <option [value]="days">{{ days }} {{ days === 1 ? 'dag' : 'dagar' }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      <p class="controls-note">Ändringarna gäller framtida förslag och fyller bara tomma dagar. Redan planerade middagar behålls.</p>
+    </div>
+  </details>
+</section>

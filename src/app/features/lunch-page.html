@@ -1,0 +1,212 @@
+@if (selectedRecipe(); as recipe) {
+  <app-recipe-detail [recipe]="recipe" [people]="selectedRecipePeople()" [extraPortions]="selectedRecipeExtraPortions()" (closed)="closeRecipe()" />
+} @else {
+  <section class="lunch-page" aria-label="Lunchlådor">
+    @if (message()) { <p class="lunch-message" role="status">{{ message() }}</p> }
+    <header class="lunch-header">
+      <div>
+        <p class="eyebrow">PLANERA EN PORTION EXTRA</p>
+        <h1>Lunchlådor</h1>
+        <p class="lunch-intro-copy">Reservera lunch från en middag med extra portioner eller från ett separat storkok.</p>
+      </div>
+    </header>
+
+    <section class="batch-section" aria-labelledby="batch-section-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">EGEN LUNCHKÄLLA</p>
+          <h2 id="batch-section-title">Storkok</h2>
+        </div>
+        <button class="batch-toggle" type="button" (click)="batchFormOpen.set(!batchFormOpen())" [attr.aria-expanded]="batchFormOpen()">
+          {{ batchFormOpen() ? 'Stäng' : 'Planera storkok' }}
+        </button>
+      </div>
+      @if (batchMessage()) { <p class="lunch-message" role="status">{{ batchMessage() }}</p> }
+      @if (batchFormOpen()) {
+        <app-cook-batch-form [recipes]="store.recipes" [todayDate]="store.todayDate()" (created)="createBatch($event)" (cancelled)="batchFormOpen.set(false)" />
+      }
+      @if (batchRows().length) {
+        <ul class="batch-list">
+          @for (row of batchRows(); track row.batch.id) {
+            <li class="batch-row">
+              <button class="batch-recipe" type="button" (click)="openBatchRecipe(row.batch)" [attr.aria-label]="'Visa recept: ' + row.batch.recipeSnapshot.name">
+                <img [src]="row.batch.recipeSnapshot.image" [alt]="row.batch.recipeSnapshot.imageAlt" loading="lazy">
+                <span><strong>{{ row.batch.recipeSnapshot.name }}</strong><small>{{ formatDate(row.batch.date) }} · {{ batchNeedsLabel(row.batch.needs) }}</small></span>
+              </button>
+              <p class="batch-capacity">{{ formatPortions(row.availablePortions) }} av {{ formatPortions(row.batch.portions) }} portioner kvar · {{ formatPortions(row.reservedPortions) }} reserverade</p>
+              <div class="batch-actions">
+                @if (row.batch.status === 'planned') {
+                  @if (row.batch.date > store.todayDate()) {
+                    <span class="action-hint">Planerat {{ formatDate(row.batch.date) }} · markering registrerar satsen tillagad idag.</span>
+                  }
+                  <button class="secondary-button" type="button" (click)="prepareBatch(row.batch.id)">Markera tillagat</button>
+                  <button class="remove-lunch" type="button" (click)="removeBatch(row.batch.id)">Ta bort storkok</button>
+                } @else {
+                  <span class="batch-prepared">Tillagat {{ row.batch.preparedAt ? formatDate(preparedDate(row.batch)) : '' }}</span>
+                  <button class="remove-lunch" type="button" (click)="undoBatch(row.batch.id)">Ångra tillagat</button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      } @else if (!batchFormOpen()) {
+        <p class="empty-list">Inga storkok är planerade.</p>
+      }
+    </section>
+
+    @if (availableSources().length) {
+      <section class="reserve-panel" aria-labelledby="reserve-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">TA MED TILL MORGONDAGEN</p>
+            <h2 id="reserve-title">Reservera en lunchlåda</h2>
+          </div>
+            <span class="capacity-note">Välj en middag eller ett storkok. Kapaciteten minskar när luncher reserveras.</span>
+        </div>
+
+        <div class="reserve-fields">
+          <label class="field">
+            <span>Lunchdatum</span>
+            <input
+              type="date"
+              name="lunchDate"
+              [min]="store.todayDate()"
+              [max]="maxDate()"
+              [ngModel]="lunchDate()"
+              (ngModelChange)="setLunchDate($event)"
+            >
+            <small>Välj idag eller ett datum inom 28 dagar.</small>
+          </label>
+          <label class="field source-field">
+            <span>Lunchkälla</span>
+            <select name="lunchSource" [ngModel]="selectedSourceValue()" (ngModelChange)="setSource($event)">
+              <option value="">Välj middag eller storkok</option>
+              @for (source of availableSources(); track source.id) {
+                <option [value]="source.id" [disabled]="effectiveSourceDate(source) > lunchDate()">
+                  {{ sourceLabel(source) }}
+                </option>
+              }
+            </select>
+            <small>Välj en källa som är planerad eller tillagad samma dag som eller före lunchdatumet.</small>
+          </label>
+        </div>
+
+        @if (selectedSource(); as source) {
+          <div class="selected-source">
+            <button class="source-recipe" type="button" (click)="openRecipe(source)" [attr.aria-label]="'Visa recept: ' + source.recipe.name">
+              @if (source.recipe.image) { <img [src]="source.recipe.image" alt="" loading="lazy"> }
+              <span><strong>{{ source.recipe.name }}</strong><small>{{ sourceKindLabel(source.kind) }} · {{ formatDate(effectiveSourceDate(source)) }} · {{ sourceIsPrepared(source) ? 'Tillagad' : 'Planerad' }}</small></span>
+              <span class="source-open" aria-hidden="true">Visa recept →</span>
+            </button>
+          <p class="source-capacity">{{ formatPortions(source.availablePortions) }} av {{ formatPortions(source.capacityPortions) }} portioner återstår att reservera.</p>
+          </div>
+
+          <fieldset class="people-fieldset">
+            <legend>Vilka ska äta lunchen?</legend>
+            @if (householdPeople().length) {
+              <div class="people-options">
+                @for (person of householdPeople(); track person.id) {
+                  <label class="person-option">
+                    <input type="checkbox" [checked]="selectedParticipantIds().includes(person.id)" (change)="toggleParticipant(person.id)">
+                    <span>{{ person.name }} <small>{{ formatPortions(person.portionFactor) }} port.</small></span>
+                  </label>
+                }
+              </div>
+              <p class="portion-estimate">Reserverar {{ formatPortions(expectedPortions()) }} {{ expectedPortions() === 1 ? 'portion' : 'portioner' }}.</p>
+            } @else {
+              <p class="muted">Lägg till personer i hushållet innan du reserverar lunchlådor.</p>
+            }
+          </fieldset>
+
+          @if (compatibilityError()) {
+            <p class="lunch-error" role="alert">{{ compatibilityError() }}</p>
+          }
+          <button class="reserve-button" type="button" (click)="reserveLunch()" [disabled]="!canReserve()">Reservera lunchlåda</button>
+        } @else {
+          <p class="lunch-error" role="status">Välj ett lunchdatum samma dag som eller efter en middag med lediga extra portioner.</p>
+        }
+      </section>
+    } @else {
+      <section class="no-sources" aria-labelledby="no-sources-title">
+        <span class="no-sources-icon" aria-hidden="true">＋</span>
+        <div>
+        <h2 id="no-sources-title">Ingen lunchkälla har lediga portioner</h2>
+          <p>Planera ett storkok här eller välj Personer → extra portioner i middagsplanen. Källan måste vara tillagad innan lunchlådan markeras som uppäten.</p>
+          <a routerLink="/planera">Öppna planeringen <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+    }
+
+    <section class="lunch-list-section" aria-labelledby="planned-lunch-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PÅ GÅNG</p>
+          <h2 id="planned-lunch-title">Planerade lunchlådor</h2>
+        </div>
+        <span class="row-count">{{ plannedLunches().length }}</span>
+      </div>
+      @if (plannedLunches().length) {
+        <ul class="lunch-list">
+          @for (row of plannedLunches(); track row.lunch.id) {
+            <li class="lunch-row">
+              @if (row.image) { <img class="lunch-image" [src]="row.image" [alt]="row.imageAlt ?? ''" loading="lazy"> }
+              <div class="lunch-row-copy">
+                <strong>{{ row.sourceName }}</strong>
+                <span>{{ formatDate(row.lunch.date) }} · {{ formatPortions(row.lunch.portions) }} {{ row.lunch.portions === 1 ? 'portion' : 'portioner' }}</span>
+                <small>Källa: {{ sourceKindLabel(row.sourceKind) }} · {{ row.sourceDate ? formatDate(row.sourceDate) : 'saknas' }} · {{ row.sourceIsPrepared ? 'Tillagad' : 'Inte tillagad ännu' }}</small>
+              </div>
+              <div class="lunch-row-actions">
+                @if (row.sourceIsPrepared && row.lunch.date <= store.todayDate()) {
+                  <button class="secondary-button" type="button" (click)="markEaten(row)">Markera uppäten</button>
+                } @else if (!row.sourceIsPrepared) {
+                  <span class="action-hint">Markera {{ row.sourceKind === 'batch' ? 'storkoket' : 'middagen' }} som tillagad först.</span>
+                } @else {
+                  <span class="action-hint">Kan markeras som uppäten på lunchdagen.</span>
+                }
+                <button class="remove-lunch" type="button" (click)="removeLunch(row.lunch.id)" [attr.aria-label]="'Ta bort lunchlåda ' + formatDate(row.lunch.date)">Ta bort</button>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="empty-list">Inga lunchlådor är reserverade.</p>
+      }
+    </section>
+
+    @if (historicalLunches().length) {
+      <section class="lunch-list-section history-section" aria-labelledby="history-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">TIDIGARE</p>
+            <h2 id="history-title">Uppätna och passerade</h2>
+          </div>
+          <span class="row-count">{{ historicalLunches().length }}</span>
+        </div>
+        <ul class="lunch-list historical-list">
+          @for (row of historicalLunches(); track row.lunch.id) {
+            <li class="lunch-row" [class.is-eaten]="row.lunch.status === 'eaten'">
+              @if (row.image) { <img class="lunch-image" [src]="row.image" [alt]="row.imageAlt ?? ''" loading="lazy"> }
+              <div class="lunch-row-copy">
+                <strong>{{ row.sourceName }}</strong>
+                <span>{{ formatDate(row.lunch.date) }} · {{ formatPortions(row.lunch.portions) }} {{ row.lunch.portions === 1 ? 'portion' : 'portioner' }}</span>
+                <small>{{ row.lunch.status === 'eaten' ? 'Uppäten' : 'Planerad · datumet har passerat' }} · Källa: {{ sourceKindLabel(row.sourceKind) }} · {{ row.sourceDate ? formatDate(row.sourceDate) : 'saknas' }}</small>
+              </div>
+              <div class="lunch-row-actions">
+                @if (row.lunch.status === 'eaten') {
+                  <button class="remove-lunch" type="button" (click)="undoEaten(row.lunch.id)">Ångra uppäten</button>
+                } @else {
+                  @if (row.sourceIsPrepared && row.lunch.date <= store.todayDate()) {
+                    <button class="secondary-button" type="button" (click)="markEaten(row)">Markera uppäten</button>
+                  } @else if (!row.sourceIsPrepared) {
+                    <span class="action-hint">Markera {{ row.sourceKind === 'batch' ? 'storkoket' : 'middagen' }} som tillagad först.</span>
+                  }
+                  <button class="remove-lunch" type="button" (click)="removeLunch(row.lunch.id)" [attr.aria-label]="'Ta bort lunchlåda ' + formatDate(row.lunch.date)">Ta bort</button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </section>
+}

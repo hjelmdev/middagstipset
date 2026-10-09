@@ -1,0 +1,23 @@
+:host { display: block; color: var(--ink); font-family: inherit; }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--forest); outline-offset: 3px; }
+.presets-panel { padding: clamp(18px, 3vw, 26px); background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+h2 { margin: 0 0 6px; font-size: 1.25rem; }
+.muted, .empty-state { color: var(--muted); font-size: .88rem; }
+.muted { margin: 0 0 16px; }
+.preset-list { display: grid; gap: 8px; padding: 0; margin: 0 0 18px; list-style: none; }
+.preset-row { overflow-wrap: anywhere; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; background: #faf9f7; border: 1px solid var(--line); border-radius: 10px; }
+.preset-row p { margin: 3px 0 0; color: var(--muted); font-size: .78rem; }
+.remove-button { min-height: 44px; padding: 7px 11px; color: #74482d; background: var(--paper); border: 1px solid #ead7c5; border-radius: 8px; cursor: pointer; }
+form { display: grid; gap: 14px; }
+.name-field { display: grid; gap: 6px; font-size: .9rem; font-weight: 700; }
+.name-field input { min-height: 44px; min-width: 0; width: 100%; font-size: 16px; padding: 9px 11px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 9px; }
+fieldset { min-width: 0; display: grid; gap: 7px; padding: 0; margin: 0; border: 0; }
+legend { margin-bottom: 6px; font-size: .9rem; font-weight: 700; }
+.person-option { overflow-wrap: anywhere; display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 7px 10px; background: #faf9f7; border-radius: 8px; }
+.person-option input { width: 19px; height: 19px; accent-color: var(--forest); }
+.save-button { min-height: 46px; padding: 10px 14px; color: #fff; font-weight: 700; background: var(--forest); border: 1px solid var(--forest); border-radius: 10px; cursor: pointer; }
+.save-button:disabled { opacity: .5; cursor: not-allowed; }
+.empty-state { padding: 12px; background: #faf9f7; border-radius: 9px; }
+.status { color: var(--forest); font-size: .85rem; }
+

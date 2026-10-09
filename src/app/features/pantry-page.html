@@ -1,0 +1,141 @@
+@if (selectedRecipe(); as recipe) {
+  <app-recipe-detail [recipe]="recipe" [people]="householdPeople()" (closed)="closeRecipe()" />
+} @else {
+  <section class="pantry-intro">
+    <p class="eyebrow">LAGA MED DET DU HAR</p>
+    <h1>Vad har jag hemma?</h1>
+    <p>Välj råvaror du har hemma så hittar vi middagar som passar.</p>
+  </section>
+
+  <section class="pantry-picker" aria-labelledby="pantry-picker-title">
+    <div class="pantry-section-heading">
+      <div>
+        <h2 id="pantry-picker-title">Dina råvaror</h2>
+        <p>Ange gärna mängd för att räkna ut vad som faktiskt saknas. En råvara utan mängd markeras som okänd mängd.</p>
+      </div>
+      <span class="pantry-count" aria-live="polite">{{ pantryIds().size }} råvaror</span>
+    </div>
+
+    <label class="pantry-search-label" for="pantry-search">Sök ingrediens</label>
+    <input
+      id="pantry-search"
+      class="pantry-search"
+      type="search"
+      name="pantrySearch"
+      autocomplete="off"
+      placeholder="Till exempel potatis eller crème fraiche"
+      [ngModel]="search()"
+      (ngModelChange)="setSearch($event)"
+      aria-describedby="pantry-help"
+    >
+    <p class="pantry-help" id="pantry-help">Förslag kommer från recepten. Lägg till en råvara och ange mängd om du vill räkna bort den från inköpen.</p>
+
+    @if (suggestions().length) {
+      <ul class="pantry-suggestions" aria-label="Ingrediensförslag">
+        @for (ingredient of suggestions(); track ingredient.id) {
+          <li>
+            <button type="button" (click)="addPantryItem(ingredient)">
+              <span>{{ ingredient.name }}</span>
+              <span class="suggestion-category">{{ ingredient.category }}</span>
+              <span class="suggestion-add" aria-hidden="true">+</span>
+            </button>
+          </li>
+        }
+      </ul>
+    } @else if (search().trim()) {
+      <p class="no-suggestions">Inga fler ingrediensförslag matchar sökningen.</p>
+    }
+
+    @if (pantryItems().length) {
+      <ul class="pantry-stock-list" aria-label="Råvaror hemma">
+        @for (ingredient of pantryItems(); track ingredient.key) {
+          <li>
+            <div class="pantry-stock-copy">
+              <strong>{{ ingredient.name }}</strong>
+              @if (ingredient.stock; as stock) {
+                <span>{{ formatQuantity(stock.quantity) }} {{ stock.unit }} hemma</span>
+              } @else {
+                <span class="unknown-amount">Mängd okänd</span>
+              }
+            </div>
+            <div class="pantry-amount-controls">
+              <label class="visually-hidden" [for]="'pantry-quantity-' + ingredient.key">Mängd {{ ingredient.name }}</label>
+              <input [id]="'pantry-quantity-' + ingredient.key" type="number" min="0" max="1000000000" step="any" inputmode="decimal" placeholder="Mängd" [ngModel]="quantityDraft(ingredient.key, ingredient.stock)" (ngModelChange)="setQuantityDraft(ingredient.key, $event)" [attr.aria-label]="'Mängd av ' + ingredient.name">
+              <label class="visually-hidden" [for]="'pantry-unit-' + ingredient.key">Enhet för {{ ingredient.name }}</label>
+              <select [id]="'pantry-unit-' + ingredient.key" [ngModel]="unitDraft(ingredient.key, ingredient.stock)" (ngModelChange)="setUnitDraft(ingredient.key, $event)" [attr.aria-label]="'Enhet för ' + ingredient.name">
+                <option value="">Välj enhet</option>
+                @for (unit of unitOptions; track unit) { <option [value]="unit">{{ unit }}</option> }
+              </select>
+              <button class="save-amount" type="button" (click)="savePantryAmount(ingredient)">Spara mängd</button>
+              <button class="remove-stock" type="button" (click)="removePantryItem(ingredient.id, ingredient.stock?.unit)" [attr.aria-label]="'Ta bort ' + ingredient.name + ' från skafferiet'">Ta bort</button>
+            </div>
+          </li>
+        }
+      </ul>
+      @if (amountError()) { <p class="amount-error" role="alert">{{ amountError() }}</p> }
+    }
+  </section>
+
+  <section class="pantry-results" aria-labelledby="pantry-results-title">
+    <div class="pantry-section-heading results-heading">
+      <div>
+        <p class="eyebrow">MIDDAGAR SOM PASSAR</p>
+        <h2 id="pantry-results-title">Receptförslag</h2>
+      </div>
+      <div class="result-filter" role="group" aria-label="Filtrera recept efter saknade ingredienser">
+        <button type="button" [attr.aria-pressed]="!onlyAllHome()" (click)="onlyAllHome.set(false)">Högst 3 saknade</button>
+        <button type="button" [attr.aria-pressed]="onlyAllHome()" (click)="onlyAllHome.set(true)">Inga mätbara underskott</button>
+      </div>
+    </div>
+
+    @if (!pantryItems().length) {
+      <div class="pantry-empty">
+        <h3>Börja med några råvaror</h3>
+        <p>Välj ingredienserna du har hemma, så visas recept med noll till tre saknade ingredienser.</p>
+      </div>
+    } @else if (results().length) {
+      <div class="pantry-recipe-list">
+        @for (match of results(); track match.recipe.id) {
+          <article class="pantry-recipe-card">
+            <button class="pantry-recipe-open" type="button" (click)="openRecipe(match.recipe)" [attr.aria-label]="'Visa recept: ' + match.recipe.name">
+              <img [src]="match.recipe.image" alt="" loading="lazy">
+              <span class="pantry-recipe-copy">
+                <span class="pantry-recipe-name">{{ match.recipe.name }}</span>
+                <span class="pantry-recipe-meta">{{ match.recipe.totalMinutes }} min · {{ attentionCount(match) ? attentionCount(match) + ' att kontrollera' : 'registrerade mängder täcker receptet' }}</span>
+              </span>
+              <span class="open-arrow" aria-hidden="true">›</span>
+            </button>
+            @if (match.missing.length || unknownPantryIngredients(match).length) {
+              <div class="missing-ingredients">
+                <h3>Att kontrollera</h3>
+                <ul>
+                  @for (ingredient of measurableShortages(match); track ingredient.id + ':' + ingredient.unit) {
+                    <li>{{ ingredient.name }} <span>Saknas {{ formatQuantity(ingredient.quantity) }} {{ ingredient.unit }}</span></li>
+                  }
+                  @for (ingredient of unknownPantryIngredients(match); track ingredient.id + ':' + ingredient.unit) {
+                    <li>{{ ingredient.name }} <span>Mängd hemma okänd</span></li>
+                  }
+                  @for (ingredient of match.incompatibleUnit; track ingredient.id + ':' + ingredient.unit) {
+                    <li>{{ ingredient.name }} <span>Kontrollera enhet (recept: {{ ingredient.unit }})</span></li>
+                  }
+                </ul>
+              </div>
+              @if (measurableShortages(match).length) {
+                <button class="add-missing" type="button" (click)="addMissingToShopping(measurableShortages(match))" [disabled]="isMissingAlreadyListed(measurableShortages(match))">
+                  {{ isMissingAlreadyListed(measurableShortages(match)) ? 'Underskott finns på inköpslistan' : 'Lägg underskott på inköpslistan' }}
+                </button>
+              }
+            } @else {
+              <p class="all-home-note">Registrerade mängder täcker receptet. Kontrollera ändå råvarornas skick innan du börjar laga.</p>
+            }
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="pantry-empty">
+        <h3>Inga recept i det här urvalet</h3>
+        <p>Välj fler råvaror, eller visa recept med högst tre saknade ingredienser.</p>
+      </div>
+    }
+  </section>
+}

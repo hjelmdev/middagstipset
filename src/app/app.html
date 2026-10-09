@@ -1,0 +1,29 @@
+<button class="skip-link" (click)="focusMain()">Hoppa till innehållet</button>
+<header class="site-header">
+  <a class="brand" routerLink="/idag" aria-label="Middagstipset, startsida"><img src="favicon.svg" alt="" width="38" height="38"><span>Middagstipset<span class="brand-dot">.</span></span></a>
+  <nav class="desktop-nav" aria-label="Huvudnavigation">
+    <a routerLink="/idag" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="home" />Idag</a><a routerLink="/planera" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="calendar" />Planera</a><a routerLink="/recept" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="book" />Recept</a><a routerLink="/handla" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="cart" />Handla</a>
+  </nav>
+  <div class="profile-menu">
+    <button id="profile-button" class="account-link" aria-label="Öppna profilmenyn" [attr.aria-expanded]="profileOpen()" aria-controls="profile-links" (click)="profileOpen.set(!profileOpen())"><app-icon name="user" /><span class="profile-label">Profil</span><app-icon name="chevron" /></button>
+    @if (profileOpen()) {
+      <div id="profile-links" class="profile-dropdown"><p>{{ auth.user()?.displayName ?? 'Demoläge' }}</p><a routerLink="/hushall">Hushåll och konto</a><a routerLink="/historik">Middagshistorik</a><a routerLink="/data">Säkerhetskopiering</a><fieldset class="palette-picker"><legend>Accentfärg</legend><button (click)="setPalette('coral')" [attr.aria-pressed]="palette() === 'coral'"><span class="color-dot coral" aria-hidden="true"></span>Terrakotta</button><button (click)="setPalette('blue')" [attr.aria-pressed]="palette() === 'blue'"><span class="color-dot blue" aria-hidden="true"></span>Blå</button><button (click)="setPalette('green')" [attr.aria-pressed]="palette() === 'green'"><span class="color-dot green" aria-hidden="true"></span>Grön</button></fieldset></div>
+    }
+  </div>
+</header>
+<main id="main" tabindex="-1">
+  @if (!auth.ready() || store.loading()) { <div class="status-card" role="status">Dukar fram din middagsvecka…</div> }
+  @else if (store.error()) { <div class="status-card" role="alert"><h1>Vi kunde inte öppna din plan</h1><p>{{ store.error() }}</p><button class="primary" (click)="store.retry()">Försök igen</button></div> }
+  @else {
+    @if (store.actionNotice()) { <aside class="notice" role="alert">{{ store.actionNotice() }} <button (click)="store.actionNotice.set('')">Stäng</button></aside> }
+    <router-outlet />
+  }
+  @if (store.saving()) { <p class="save-status" role="status">Sparar ändringar…</p> }
+  @if (store.storageNotice()) { <aside class="notice" role="alert">{{ store.storageNotice() }} <button (click)="store.saveAgain()">Spara igen</button></aside> }
+</main>
+<nav class="mobile-nav" aria-label="Huvudnavigation på mobil">
+  <a routerLink="/idag" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="home" />Idag</a><a routerLink="/planera" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="calendar" />Planera</a><a routerLink="/recept" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="book" />Recept</a><a routerLink="/handla" routerLinkActive="active" ariaCurrentWhenActive="page"><app-icon name="cart" />Handla</a>
+</nav>
+
+
+

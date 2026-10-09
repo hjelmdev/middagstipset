@@ -1,0 +1,128 @@
+<section class="shopping-list" aria-label="Inköpslista">
+  <section class="pantry-deduction" aria-labelledby="pantry-deduction-title">
+    <div>
+      <h2 id="pantry-deduction-title">Skafferi och inköp</h2>
+      <p>När mängder finns i skafferiet kan inköpslistan visa nettobehovet. Lagat middag drar av använd mängd; planerade luncher drar inte av samma middag igen. Egna varor påverkas inte.</p>
+    </div>
+    <label class="deduction-toggle">
+      <input type="checkbox" [checked]="deductPantryStock()" (change)="setDeductPantryStock($any($event.target).checked)">
+      <span>Räkna bort råvaror hemma</span>
+    </label>
+  </section>
+  @if (store.shoppingItems().length) {
+    <p class="shopping-progress" role="status">
+      <strong>{{ completedCount() }} av {{ store.shoppingItems().length }} klara</strong>
+      <span> bocka av varorna allt eftersom du handlar</span>
+    </p>
+
+    <div class="shopping-groups">
+      @for (group of groups(); track group.category) {
+        <section class="shopping-group" [attr.aria-label]="group.category">
+          <h2>{{ group.category }}</h2>
+          <ul>
+            @for (item of group.items; track item.id) {
+              <li class="shopping-item" [class.is-checked]="item.checked">
+                <label class="shopping-item-label">
+                  <input
+                    type="checkbox"
+                    [checked]="item.checked"
+                    (change)="store.toggleShopping(item.id)"
+                    [attr.aria-label]="'Markera ' + item.name + ', ' + formatQuantity(item)"
+                  >
+                  <span class="item-copy">
+                    <span class="item-name">{{ item.name }}</span>
+                    <span class="item-quantity">{{ formatQuantity(item) }}{{ item.source === 'manual' ? (item.ingredientId === 'manual' ? ' · Egen vara' : ' · Tillagd vara') : '' }}</span>
+                  </span>
+                </label>
+                @if (item.source === 'manual') {
+                  <button
+                    class="remove-item"
+                    type="button"
+                    [attr.aria-label]="'Ta bort ' + item.name"
+                    (click)="removeManualItem(item)"
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  } @else {
+    <div class="shopping-empty">
+      <span class="empty-icon"><app-icon name="cart" /></span>
+      <h2>Listan är tom</h2>
+      <p>Planera kommande middagar så samlar vi ingredienserna här.</p>
+      <a routerLink="/planera">Planera middagar <span aria-hidden="true">→</span></a>
+    </div>
+  }
+
+  <form class="add-item-form" (ngSubmit)="addItem()">
+    <p class="form-title">Lägg till vara</p>
+    <p class="form-help" id="shopping-item-help">Skriv för att hitta ingredienser. Välj ett förslag eller ange en ny vara.</p>
+    <div class="add-item-controls">
+      <div class="shopping-form-field name-field">
+        <label for="new-shopping-item">Vara</label>
+        <input
+          id="new-shopping-item"
+          name="newShoppingItem"
+          type="text"
+          maxlength="100"
+          autocomplete="off"
+          placeholder="Till exempel kaffe"
+          aria-describedby="shopping-item-help"
+          [ngModel]="newItemName()"
+          (ngModelChange)="setItemName($event)"
+        >
+      </div>
+      <div class="shopping-form-field quantity-field">
+        <label for="new-shopping-quantity">Mängd</label>
+        <input
+          id="new-shopping-quantity"
+          name="newShoppingQuantity"
+          type="number"
+          min="0"
+          max="1000000"
+          step="any"
+          inputmode="decimal"
+          [ngModel]="newItemQuantity()"
+          (ngModelChange)="setQuantity($event)"
+        >
+      </div>
+      <div class="shopping-form-field unit-field">
+        <label for="new-shopping-unit">Enhet</label>
+        <select id="new-shopping-unit" name="newShoppingUnit" [ngModel]="newItemUnit()" (ngModelChange)="setUnit($event)">
+          @for (unit of units; track unit) { <option [value]="unit">{{ unit }}</option> }
+        </select>
+      </div>
+      <button class="add-item-submit" type="submit" [disabled]="!newItemName().trim() || !validQuantity()">Lägg till</button>
+    </div>
+    @if (suggestions().length) {
+      <ul class="ingredient-suggestions" id="ingredient-suggestions" aria-label="Ingrediensförslag">
+        @for (ingredient of suggestions(); track ingredient.id) {
+          <li>
+            <button type="button" (click)="chooseSuggestion(ingredient)">
+              <span>{{ ingredient.name }}</span>
+              <span class="suggestion-category">{{ ingredient.category }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+    @if (newItemName().trim() && !exactIngredient()) {
+      <div class="category-control">
+        <label for="new-shopping-category">Kategori för den nya varan</label>
+        <select id="new-shopping-category" name="newShoppingCategory" [ngModel]="selectedCategory()" (ngModelChange)="setCategory($event)">
+          @for (category of categories; track category) { <option [value]="category">{{ category }}</option> }
+        </select>
+      </div>
+    }
+    @if (selectedSuggestion(); as selected) {
+      <p class="selected-suggestion" role="status">Valt förslag: {{ selected.name }} · {{ selected.category }}</p>
+    }
+  </form>
+</section>
+
+

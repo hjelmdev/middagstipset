@@ -1,0 +1,47 @@
+<section class="settings-panel" aria-labelledby="generation-settings-title">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Förslag framåt</p>
+      <h2 id="generation-settings-title" data-panel-heading tabindex="-1">Filtrera nya middagar</h2>
+    </div>
+    <button class="icon-button" type="button" aria-label="Stäng inställningarna" (click)="closed.emit()">×</button>
+  </header>
+
+  <p class="intro-copy">Filtren gäller bara nya förslag. Middagar som redan finns i planen behålls. Dagens tidsgräns och deltagarnas kostbehov gäller också.</p>
+
+  <div class="filter-list">
+    <label class="filter-option">
+      <input type="checkbox" [checked]="vegetarianOnly()" (change)="setVegetarianOnly($event)" />
+      <span class="filter-copy">
+        <strong>Vegetariskt</strong>
+        <small>Föreslå bara vegetariska recept</small>
+      </span>
+    </label>
+    <label class="filter-option">
+      <input type="checkbox" [checked]="favoritesOnly()" (change)="setFavoritesOnly($event)" />
+      <span class="filter-copy">
+        <strong>Favoriter</strong>
+        <small>Välj bara bland recept du har sparat som favoriter</small>
+      </span>
+    </label>
+  </div>
+
+  <label class="time-field" for="generation-max-minutes">
+    <span>Max tillagningstid</span>
+    <select id="generation-max-minutes" [ngModel]="maxMinutes() ?? ''" (ngModelChange)="setMaxMinutes($event)" [ngModelOptions]="{ standalone: true }">
+      <option value="">Ingen extra tidsgräns</option>
+      @for (minutes of timeLimits; track minutes) {
+        <option [value]="minutes">{{ minutes }} minuter</option>
+      }
+      @if (maxMinutes() !== null && !timeLimits.includes(maxMinutes()!)) {
+        <option [value]="maxMinutes()">{{ maxMinutes() }} minuter</option>
+      }
+    </select>
+  </label>
+
+  <footer class="panel-actions">
+    <button class="secondary-button" type="button" (click)="closed.emit()">Avbryt</button>
+    <button class="primary-button" type="button" (click)="save()">Spara filter</button>
+  </footer>
+</section>
+

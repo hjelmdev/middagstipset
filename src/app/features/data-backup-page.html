@@ -1,0 +1,76 @@
+<section class="backup-page" aria-labelledby="backup-title">
+  <header class="backup-header">
+    <p class="eyebrow">DIN DATA</p>
+    <h1 id="backup-title">Säkerhetskopiera</h1>
+    <p>Exportera dina sparade uppgifter till en fil eller återställ dem från en tidigare säkerhetskopia.</p>
+  </header>
+
+  @if (store.loading()) {
+    <p class="panel status-panel" role="status">Laddar dina sparade data…</p>
+  } @else {
+    <section class="panel export-panel" aria-labelledby="export-title">
+      <div>
+        <p class="eyebrow">SPARA EN KOPIA</p>
+        <h2 id="export-title">Exportera dina data</h2>
+        <p>Filen innehåller ditt hushåll, planering, recept, inköpslista och lunchlådor. Inloggningsuppgifter och nycklar ingår inte.</p>
+      </div>
+      @if (currentOverview(); as overview) {
+        <ul class="overview" aria-label="Data som exporteras">
+          <li><strong>{{ overview.people }}</strong><span>personer</span></li>
+          <li><strong>{{ overview.meals }}</strong><span>middagar</span></li>
+          <li><strong>{{ overview.recipes }}</strong><span>egna recept</span></li>
+          <li><strong>{{ overview.lunches }}</strong><span>lunchplaner</span></li>
+        </ul>
+      }
+      <button class="primary-button" type="button" (click)="exportCurrent()">Ladda ner säkerhetskopia</button>
+    </section>
+
+    <section class="panel import-panel" aria-labelledby="import-title">
+      <div>
+        <p class="eyebrow">ÅTERSTÄLL FRÅN FIL</p>
+        <h2 id="import-title">Välj en säkerhetskopia</h2>
+        <p>Välj en Middagstipset-fil i JSON-format. Filen kontrolleras först; inget ändras när du väljer den.</p>
+      </div>
+      <label class="file-picker">
+        <span>Välj JSON-fil</span>
+        <input type="file" accept=".json,application/json" (change)="readFile($event)">
+      </label>
+      <p class="file-limit">Maximal filstorlek: 5 MB.</p>
+
+      @if (draft(); as backup) {
+        <div class="draft-panel" aria-labelledby="draft-title">
+          <div>
+            <p class="eyebrow">FÖRHANDSGRANSKNING</p>
+            <h3 id="draft-title">{{ backup.fileName }}</h3>
+            <p>Exporterad {{ formatDate(backup.exportedAt) }}</p>
+          </div>
+          <ul class="overview" aria-label="Innehåll i vald säkerhetskopia">
+            <li><strong>{{ backup.overview.people }}</strong><span>personer</span></li>
+            <li><strong>{{ backup.overview.meals }}</strong><span>middagar</span></li>
+            <li><strong>{{ backup.overview.recipes }}</strong><span>egna recept</span></li>
+            <li><strong>{{ backup.overview.lunches }}</strong><span>lunchplaner</span></li>
+          </ul>
+          <p class="replace-warning"><strong>Återställningen ersätter all sparad data</strong> för det konto eller den här enheten, inklusive planering, egna recept och inköpslista.</p>
+          <button class="secondary-button" type="button" (click)="exportCurrent()">Rekommenderat: exportera nuvarande data</button>
+          <label class="confirm-check">
+            <input type="checkbox" [checked]="confirmed()" (change)="confirmed.set($any($event.target).checked)">
+            <span>Ersätt mina sparade data med säkerhetskopian</span>
+          </label>
+          <button class="danger-button" type="button" [disabled]="!confirmed() || busy()" (click)="restore()">
+            {{ busy() ? 'Återställer…' : 'Bekräfta återställning' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    @if (previousState()) {
+      <section class="undo-panel" aria-label="Ångra återställning">
+        <p>En kopia av datan som fanns före återställningen finns kvar tills du lämnar sidan.</p>
+        <button class="secondary-button" type="button" [disabled]="busy()" (click)="undoRestore()">Ångra återställning</button>
+      </section>
+    }
+  }
+
+  @if (error()) { <p class="feedback error" role="alert">{{ error() }}</p> }
+  @if (message()) { <p class="feedback success" role="status">{{ message() }}</p> }
+</section>

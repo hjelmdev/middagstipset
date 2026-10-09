@@ -1,0 +1,86 @@
+<section class="settings-panel" aria-labelledby="meal-settings-title">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Anpassa middagen</p>
+      <h1 id="meal-settings-title" data-panel-heading tabindex="-1">Vilka ska äta?</h1>
+    </div>
+    <button class="icon-button" type="button" aria-label="Stäng inställningarna" (click)="closed.emit()">×</button>
+  </header>
+
+  @if (readOnly()) {
+    <p class="read-only-note" role="status">{{ readOnlyMessage() }}</p>
+  }
+
+  <fieldset class="settings-fieldset" [disabled]="readOnly()">
+    <legend>Deltagare</legend>
+    @if (presets().length > 0) {
+      <div class="preset-shortcuts" aria-label="Sparade sällskap">
+        @for (preset of presets(); track preset.id) {
+          <button class="preset-shortcut" type="button" [disabled]="readOnly()" (click)="applyPreset(preset)">
+            <span>{{ preset.name }}</span>
+            <strong>Använd sällskap</strong>
+          </button>
+        }
+      </div>
+    }
+    @if (people().length > 0) {
+      <div class="participant-list">
+        @for (person of people(); track person.id) {
+          <label class="participant-option">
+            <input
+              type="checkbox"
+              [checked]="isSelected(person)"
+              [disabled]="isOnlySelected(person)"
+              (change)="togglePerson(person, $event)"
+            />
+            <span>{{ person.name }}</span>
+            @if (person.dietaryNeeds.length > 0) {
+              <small>{{ person.dietaryNeeds.includes('gluten-free') ? 'Glutenfritt' : '' }}{{ person.dietaryNeeds.includes('gluten-free') && person.dietaryNeeds.includes('vegetarian') ? ' · ' : '' }}{{ person.dietaryNeeds.includes('vegetarian') ? 'Vegetariskt' : '' }}</small>
+            }
+          </label>
+        }
+      </div>
+    } @else {
+      <p class="empty-people">Lägg till en person i hushållet för att planera middagen.</p>
+    }
+  </fieldset>
+
+  <p class="dietary-summary" aria-live="polite">
+    <span class="summary-label">Kostbehov för valda</span>
+    <strong>{{ dietarySummary() }}</strong>
+  </p>
+
+  <div class="settings-grid">
+    <label class="field" for="extra-portions">
+      <span>Extra portioner</span>
+      <input
+        id="extra-portions"
+        type="number"
+        min="0"
+        max="12"
+        step="1"
+        [value]="draftExtraPortions()"
+        [disabled]="readOnly()"
+        (input)="setExtraPortions($event)"
+      />
+      <small>0–12 portioner utöver deltagarna</small>
+    </label>
+
+    <label class="field" for="max-minutes">
+      <span>Max tillagningstid</span>
+      <select id="max-minutes" [ngModel]="draftMaxMinutes()" (ngModelChange)="setMaxMinutesValue($event)" [ngModelOptions]="{ standalone: true }" [disabled]="readOnly()">
+        @for (minutes of timeOptions(); track minutes) {
+          <option [value]="minutes">{{ minutes }} minuter</option>
+        }
+      </select>
+      <small>Receptförslag håller sig inom vald tid</small>
+    </label>
+  </div>
+
+  <p class="shopping-note">Inköpsmängderna räknas om när du sparar.</p>
+
+  <footer class="panel-actions">
+    <button class="secondary-button" type="button" (click)="closed.emit()">Avbryt</button>
+    <button class="primary-button" type="button" [disabled]="readOnly() || !hasSelectedPerson()" (click)="save()">Spara ändringar</button>
+  </footer>
+</section>

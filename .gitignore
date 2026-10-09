@@ -1,0 +1,8 @@
+node_modules/
+.angular/
+dist/
+.pnpm-store/
+.env*
+!.env.example
+src/app/core/runtime-config.local.ts
+artifacts/

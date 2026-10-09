@@ -1,0 +1,42 @@
+<section class="presets-panel" aria-labelledby="presets-title">
+  <h2 id="presets-title">Sparade sällskap</h2>
+  <p class="muted">Spara vanliga kombinationer av personer för att snabbt välja dem till en middag.</p>
+
+  @if (presets().length > 0) {
+    <ul class="preset-list">
+      @for (preset of presets(); track preset.id) {
+        <li class="preset-row">
+          <div>
+            <strong>{{ preset.name }}</strong>
+            <p>{{ preset.participantIds.length }} {{ preset.participantIds.length === 1 ? 'person' : 'personer' }}</p>
+          </div>
+          <button class="remove-button" type="button" (click)="remove(preset)" [attr.aria-label]="'Ta bort ' + preset.name">Ta bort</button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="empty-state">Inga sparade sällskap ännu.</p>
+  }
+
+  @if (people().length > 0) {
+    <form (submit)="$event.preventDefault(); save()">
+      <label class="name-field">Namn på sällskapet
+        <input type="text" maxlength="80" [value]="name()" (input)="setName($event)" placeholder="Till exempel Hela familjen" />
+      </label>
+      <fieldset>
+        <legend>Vilka ingår?</legend>
+        @for (person of people(); track person.id) {
+          <label class="person-option">
+            <input type="checkbox" [checked]="isSelected(person)" (change)="togglePerson(person, $event)" />
+            <span>{{ person.name }}</span>
+          </label>
+        }
+      </fieldset>
+      <button class="save-button" type="submit" [disabled]="!name().trim() || selectedIds().length === 0">Spara sällskap</button>
+    </form>
+  } @else {
+    <p class="empty-state">Lägg till personer i hushållet innan du skapar ett sällskap.</p>
+  }
+
+  @if (savedMessage()) { <p class="status" role="status">{{ savedMessage() }}</p> }
+</section>

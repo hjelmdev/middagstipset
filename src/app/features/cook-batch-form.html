@@ -1,0 +1,51 @@
+<section class="batch-form" aria-labelledby="batch-form-title">
+  <header class="batch-form-heading">
+    <div>
+      <p class="eyebrow">FRISTÅENDE SATS</p>
+      <h2 id="batch-form-title">Planera ett storkok</h2>
+      <p>Planera en sats att laga en dag och äta som lunch flera dagar.</p>
+    </div>
+    <button class="close-form" type="button" (click)="cancelled.emit()" aria-label="Stäng formuläret">×</button>
+  </header>
+
+  <fieldset class="batch-needs">
+    <legend>Hela satsen ska vara</legend>
+    <label>
+      <input type="checkbox" [checked]="needs().includes('vegetarian')" (change)="toggleNeed('vegetarian', $any($event.target).checked)">
+      <span>Vegetarisk</span>
+    </label>
+    <label>
+      <input type="checkbox" [checked]="needs().includes('gluten-free')" (change)="toggleNeed('gluten-free', $any($event.target).checked)">
+      <span>Glutenfri</span>
+    </label>
+  </fieldset>
+
+  <div class="batch-fields">
+    <label>
+      <span>Recept för hela satsen</span>
+      <select [ngModel]="currentRecipeId()" (ngModelChange)="setRecipe($event)" [disabled]="!eligibleRecipes().length">
+        @for (recipe of eligibleRecipes(); track recipe.id) { <option [value]="recipe.id">{{ recipe.name }}</option> }
+      </select>
+    </label>
+    <label>
+      <span>Tillagningsdatum</span>
+      <input type="date" [min]="todayDate()" [ngModel]="date()" (ngModelChange)="setDate($event)">
+    </label>
+    <label>
+      <span>Totalt antal portioner</span>
+      <input type="number" min="0.5" max="120" step="0.5" inputmode="decimal" [ngModel]="portions()" (ngModelChange)="setPortions($event)">
+    </label>
+  </div>
+
+  @if (!eligibleRecipes().length) {
+    <p class="batch-error" role="status">Inget recept i biblioteket uppfyller kostkraven för hela satsen. Välj en annan kombination eller granska recepten först.</p>
+  } @else if (selectedRecipe(); as recipe) {
+    <p class="batch-recipe-note"><strong>{{ recipe.name }}</strong> · {{ recipe.totalMinutes }} min. Kostkraven kontrolleras mot receptets verifierade innehåll och anpassningar.</p>
+  }
+
+  <p class="batch-safety-note">Du kan reservera luncher redan när satsen är planerad. Markera satsen tillagad innan en lunch markeras som uppäten. Kostbehoven fryses för satsen och kontrolleras när en lunch planeras.</p>
+  <footer class="batch-form-actions">
+    <button class="cancel-button" type="button" (click)="cancelled.emit()">Avbryt</button>
+    <button class="create-button" type="button" (click)="create()" [disabled]="!canCreate()">Skapa sats</button>
+  </footer>
+</section>

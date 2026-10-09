@@ -1,0 +1,490 @@
+:host {
+  display: block;
+  color: var(--ink);
+}
+
+.pantry-intro {
+  margin-bottom: 22px;
+}
+
+.pantry-intro .eyebrow,
+.results-heading .eyebrow {
+  margin-bottom: 7px;
+}
+
+.pantry-intro h1 {
+  font-size: clamp(1.7rem, 3.5vw, 2.35rem);
+}
+
+.pantry-intro > p:last-child {
+  margin-top: 9px;
+  color: var(--muted);
+}
+
+.pantry-picker,
+.pantry-recipe-card,
+.pantry-empty {
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--paper);
+}
+
+.pantry-picker {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.pantry-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.pantry-section-heading h2 {
+  font-size: 1.2rem;
+}
+
+.pantry-section-heading p:not(.eyebrow) {
+  max-width: 650px;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.pantry-count {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 99px;
+  background: var(--forest-soft);
+  color: var(--forest);
+  font-size: .83rem;
+  font-weight: 700;
+}
+
+.pantry-search-label {
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.pantry-search {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.pantry-help,
+.no-suggestions {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.pantry-suggestions,
+.pantry-chips,
+.pantry-recipe-list,
+.missing-ingredients ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pantry-suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.pantry-suggestions button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--cream);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pantry-suggestions button > span:first-child {
+  flex: 1;
+  font-size: .92rem;
+  font-weight: 650;
+}
+
+.suggestion-category {
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.suggestion-add {
+  color: var(--forest);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.pantry-suggestions button:hover,
+.pantry-suggestions button:focus-visible {
+  border-color: var(--forest);
+  background: var(--forest-soft);
+}
+
+.pantry-stock-list {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 3px 0 0;
+  list-style: none;
+}
+
+.pantry-stock-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--cream);
+}
+
+.pantry-stock-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pantry-stock-copy strong {
+  overflow-wrap: anywhere;
+  font-size: .95rem;
+}
+
+.pantry-stock-copy > span {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.pantry-stock-copy .unknown-amount {
+  color: var(--terracotta, #a7442e);
+  font-weight: 650;
+}
+
+.pantry-amount-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.pantry-amount-controls input,
+.pantry-amount-controls select {
+  width: 90px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: .88rem;
+}
+
+.pantry-amount-controls select { width: 70px; }
+
+.pantry-amount-controls button {
+  min-height: 44px;
+  padding: 7px 9px;
+  border: 1px solid var(--forest);
+  border-radius: 8px;
+  background: var(--forest);
+  color: #fff;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pantry-amount-controls .remove-stock {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--muted);
+}
+
+.amount-error {
+  color: #9b3023;
+  font-size: .88rem;
+  font-weight: 650;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+  border: 0;
+}
+
+.pantry-results {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.results-heading {
+  align-items: end;
+}
+
+.results-heading h2 {
+  font-size: 1.45rem;
+}
+
+.result-filter {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--paper);
+}
+
+.result-filter button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .88rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.result-filter button[aria-pressed='true'] {
+  background: var(--forest);
+  color: #fff;
+}
+
+.pantry-recipe-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pantry-recipe-card {
+  overflow: hidden;
+  padding: 12px;
+}
+
+.pantry-recipe-open {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 76px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pantry-recipe-open img {
+  flex: 0 0 76px;
+  width: 76px;
+  height: 76px;
+  border-radius: 9px;
+  background: var(--forest-soft);
+  object-fit: cover;
+}
+
+.pantry-recipe-copy {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+  min-width: 0;
+}
+
+.pantry-recipe-name {
+  font-size: .98rem;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.pantry-recipe-meta {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.open-arrow {
+  color: var(--forest);
+  font-size: 1.5rem;
+}
+
+.missing-ingredients {
+  margin-top: 10px;
+  padding: 11px 12px;
+  border-radius: 9px;
+  background: var(--cream);
+}
+
+.missing-ingredients h3 {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: .78rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.missing-ingredients li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: .88rem;
+}
+
+.missing-ingredients li span {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.add-missing {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 10px;
+  padding: 9px 13px;
+  border: 1px solid var(--forest);
+  border-radius: 9px;
+  background: var(--forest);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-missing:disabled {
+  border-color: var(--line);
+  background: var(--cream);
+  color: var(--muted);
+  cursor: default;
+}
+
+.all-home-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--forest-soft);
+  color: var(--forest);
+  font-size: .87rem;
+}
+
+.pantry-empty {
+  padding: 26px;
+}
+
+.pantry-empty h3 {
+  font-size: 1rem;
+}
+
+.pantry-empty p {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+.pantry-search:focus-visible,
+.pantry-suggestions button:focus-visible,
+.result-filter button:focus-visible,
+.pantry-recipe-open:focus-visible,
+.add-missing:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .pantry-picker {
+    padding: 16px;
+  }
+
+  .pantry-suggestions,
+  .pantry-recipe-list {
+    grid-template-columns: 1fr;
+  }
+
+  .pantry-results {
+    margin-top: 20px;
+  }
+
+  .results-heading {
+    display: grid;
+    align-items: start;
+  }
+
+  .result-filter {
+    width: 100%;
+  }
+
+  .result-filter button {
+    flex: 1;
+    padding-inline: 8px;
+    font-size: .82rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .pantry-section-heading {
+    flex-wrap: wrap;
+  }
+
+  .pantry-count {
+    margin-top: -5px;
+  }
+
+  .pantry-picker {
+    padding: 13px;
+  }
+
+  .pantry-stock-list > li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pantry-amount-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 66px;
+  }
+
+  .pantry-amount-controls input,
+  .pantry-amount-controls select {
+    width: 100%;
+  }
+
+  .pantry-amount-controls button {
+    grid-column: span 1;
+  }
+
+  .pantry-recipe-card {
+    padding: 10px;
+  }
+
+  .missing-ingredients li {
+    font-size: .84rem;
+  }
+}

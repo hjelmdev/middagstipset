@@ -1,0 +1,39 @@
+:host { display: block; min-width: 0; color: var(--ink); }
+
+button, textarea { font: inherit; }
+button:focus-visible, textarea:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; }
+
+.import-page {
+  width: min(100% - 32px, 880px);
+  margin: 0 auto;
+  padding: 24px 0 64px;
+}
+
+.import-header { margin-bottom: 22px; }
+.back-button, .secondary-button, .primary-button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.back-button { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 24px; color: var(--forest); background: var(--forest-soft); text-decoration: none; }
+.eyebrow { margin: 0 0 8px; color: var(--terracotta); font-size: 13px; font-weight: 750; letter-spacing: .08em; }
+h1 { margin: 0; font-size: clamp(30px, 4vw, 40px); line-height: 1.1; letter-spacing: -.035em; }
+.import-header>p:last-child { max-width: 680px; color: var(--muted); line-height: 1.55; }
+.import-panel { display: grid; gap: 14px; padding: clamp(16px, 4vw, 28px); background: var(--paper); border: 1px solid var(--line); border-radius: 18px; }
+label { display: grid; gap: 8px; font-weight: 700; }
+textarea { width: 100%; min-width: 0; min-height: 280px; box-sizing: border-box; padding: 14px; resize: vertical; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 12px; font-size: 16px; line-height: 1.5; }
+.helper { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.error { margin: 0; padding: 12px; color: #832d1b; background: #fff0eb; border: 1px solid #efb7a6; border-radius: 10px; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.secondary-button { display: inline-flex; align-items: center; justify-content: center; color: var(--forest); background: var(--forest-soft); text-decoration: none; }
+.primary-button { color: white; background: var(--forest); }
+
+@media (max-width: 480px) {
+  .import-page { width: min(100% - 16px, 880px); padding-top: 12px; }
+  .actions { display: grid; grid-template-columns: 1fr; }
+  .actions button { width: 100%; }
+}

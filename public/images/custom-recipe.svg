@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title desc">
+  <title id="title">Illustration för eget recept</title>
+  <desc id="desc">En enkel tallrik med bestick på ljus bakgrund.</desc>
+  <rect width="480" height="320" rx="24" fill="#f4f7f8"/>
+  <circle cx="240" cy="160" r="104" fill="#fff" stroke="#087f5b" stroke-width="5"/>
+  <circle cx="240" cy="160" r="78" fill="#f4f7f8" stroke="#dce6e2" stroke-width="4"/>
+  <path d="M99 83v42m-12-42v25m24-25v25m-12 17v85m-2 0h4" fill="none" stroke="#087f5b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M381 83c-12 10-18 26-18 45 0 17 7 27 18 31v93m0-169v76" fill="none" stroke="#c64b2f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M240 118c-22 15-27 37 0 61 27-24 22-46 0-61Z" fill="#e4f6ed" stroke="#087f5b" stroke-width="4"/>
+  <path d="M240 129v42" fill="none" stroke="#087f5b" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,256 @@
+:host {
+  display: block;
+  color: var(--ink);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.backup-page {
+  width: min(100%, 880px);
+  margin-inline: auto;
+  padding-bottom: 32px;
+}
+
+.backup-header {
+  margin-bottom: 22px;
+}
+
+.backup-header h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.backup-header > p:last-child,
+.panel > div > p:last-child,
+.draft-panel > div > p:last-child,
+.undo-panel p {
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.panel {
+  margin-top: 16px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--paper);
+}
+
+.panel h2,
+.draft-panel h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.eyebrow {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: .73rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin: 17px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview li {
+  display: grid;
+  gap: 2px;
+  min-height: 66px;
+  align-content: center;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--cream);
+}
+
+.overview strong {
+  color: var(--forest);
+  font-size: 1.15rem;
+}
+
+.overview span {
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.file-picker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 10px 15px;
+  border: 1px solid var(--forest);
+  border-radius: 9px;
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.primary-button {
+  background: var(--forest);
+  color: #fff;
+}
+
+.secondary-button {
+  background: var(--paper);
+  color: var(--forest);
+}
+
+.danger-button {
+  border-color: #853d2d;
+  background: #853d2d;
+  color: #fff;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.file-picker {
+  position: relative;
+  width: fit-content;
+  margin-top: 16px;
+  overflow: hidden;
+  background: var(--forest-soft);
+  color: var(--forest);
+}
+
+.file-picker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-picker:focus-within,
+button:focus-visible,
+.confirm-check input:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 3px;
+}
+
+.file-limit {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.draft-panel {
+  display: grid;
+  gap: 13px;
+  margin-top: 19px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--cream);
+}
+
+.draft-panel .overview {
+  margin: 0;
+}
+
+.replace-warning {
+  margin: 0;
+  padding: 12px;
+  border-left: 4px solid #a95432;
+  border-radius: 5px;
+  background: #fff2e8;
+  color: #66351f;
+  font-size: .91rem;
+  line-height: 1.5;
+}
+
+.confirm-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-height: 48px;
+  padding: 11px 0;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.confirm-check input {
+  flex: 0 0 21px;
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  accent-color: var(--forest);
+}
+
+.undo-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 15px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--forest-soft);
+}
+
+.undo-panel p {
+  margin: 0;
+  font-size: .9rem;
+}
+
+.feedback {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  line-height: 1.45;
+}
+
+.feedback.error {
+  background: #fff2e8;
+  color: #7d351f;
+}
+
+.feedback.success {
+  background: var(--forest-soft);
+  color: var(--forest);
+}
+
+@media (max-width: 520px) {
+  .panel {
+    padding: 16px;
+  }
+
+  .overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .file-picker {
+    width: 100%;
+  }
+
+  .draft-panel {
+    padding: 13px;
+  }
+
+  .draft-panel .secondary-button,
+  .danger-button {
+    width: 100%;
+  }
+
+  .undo-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

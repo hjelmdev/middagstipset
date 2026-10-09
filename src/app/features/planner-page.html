@@ -1,0 +1,89 @@
+@if (selectedRecipe(); as recipe) {
+  @defer (on immediate) { <app-recipe-detail [recipe]="recipe" [people]="detailPeople()" [extraPortions]="selectedMeal()?.cookedSnapshot?.extraPortions ?? selectedMeal()?.extraPortions ?? 0" [canMarkCooked]="!!selectedMeal() && selectedMeal()?.status !== 'cooked'" (closed)="close()" (cooked)="cooked()" /> }
+} @else if (editingRecipe()) {
+  @defer (on immediate) { <app-recipe-editor [recipe]="recipeDraft()" (saved)="saveRecipe($event)" (cancelled)="cancelRecipe()" /> }
+} @else if (settingsMeal(); as meal) {
+  @defer (on immediate) { <app-meal-settings [meal]="meal" [people]="people()" [presets]="store.state()?.participantPresets ?? []" (changed)="saveMealSettings($event)" (closed)="closeSettings()" /> }
+} @else if (pickerMeal(); as meal) {
+  @defer (on immediate) {
+    <app-recipe-picker [recipes]="pickerRecipes()" [meal]="meal" (selected)="selectDinner($event)" (closed)="closePicker()" />
+  } @loading { <p role="status">Öppnar receptväljaren…</p> }
+} @else {
+  @if (store.incompatibleMeals().length) { <p class="error" role="alert">{{ store.incompatibleMeals().length }} middagar passar inte nuvarande kostbehov. Byt dem eller ändra deltagare. De räknas inte med i inköpslistan.</p> } @if (message()) { <p class="feedback" role="status">{{ message() }}</p> }
+  @if (screen() === 'today') {
+    <section class="page-intro today-intro"><div><p class="eyebrow">{{ formatDate(todayDate(), { weekday: 'long', day: 'numeric', month: 'long' }) }}</p><h1>Dagens middag</h1></div></section>
+    @if (todayRecipe(); as recipe) {
+      <section class="today-card">
+        <div class="today-image"><img [src]="recipe.image" [alt]="recipe.imageAlt"><span class="image-label">{{ imageLabel(recipe) }}</span></div>
+        <div class="today-copy">@if (todayMeal().status === 'cooked') { <span class="pill">Lagad ✓</span> }<h2>{{ recipe.name }}</h2><div class="meta"><span class="time-badge">{{ recipe.totalMinutes }} min</span><span>{{ portions(todayMeal()) }} {{ portions(todayMeal()) === 1 ? 'portion' : 'portioner' }}</span></div><button class="primary" (click)="open(recipe, todayMeal())">{{ todayMeal().status === 'cooked' ? 'Visa receptet' : 'Börja laga' }} <span aria-hidden="true">→</span></button></div>
+      </section>
+    } @else {
+      <section class="welcome-card"><div class="welcome-art"><img [src]="store.recipes[0].image" [alt]="store.recipes[0].imageAlt"><span class="image-label">{{ imageLabel(store.recipes[0]) }}</span></div><div class="welcome-copy"><span class="pill">Ingen middag planerad idag</span><h2>Planera middagar från idag.</h2><p>Få middagsförslag till de tomma dagarna. Dina valda middagar är kvar.</p><button class="primary" (click)="generate()" [disabled]="generationDisabled()">{{ generationLabel() }} <span aria-hidden="true">→</span></button><p class="small">Utgår från {{ portions() }} {{ portions() === 1 ? 'portion' : 'portioner' }}.</p></div></section>
+    }
+    <section class="upcoming-section" aria-labelledby="upcoming-title">
+      <div class="section-top"><h2 id="upcoming-title">Kommande middagar</h2><span class="small muted">{{ rangeLabel() }}</span><a routerLink="/planera" class="text-link" (click)="goToToday()">Visa alla {{ store.planningDays() }} dagar →</a></div>
+      @if (upcomingTotalCount() > upcomingPreviewCount()) { <p class="small muted">Visar {{ upcomingPreviewCount() }} av {{ upcomingTotalCount() }} kommande middagar.</p> }
+      <div class="upcoming-list">
+        @for (item of upcomingMeals(); track item.date) {
+          @if (item.recipe; as recipe) {
+            <button class="upcoming-row" (click)="open(recipe, item.meal)"><span class="upcoming-date"><strong>{{ formatDate(item.date, { weekday: 'short' }) }}</strong><small>{{ formatDate(item.date, { day: 'numeric', month: 'short' }) }}</small></span><span class="upcoming-name">{{ recipe.name }}</span><span class="upcoming-time">{{ recipe.totalMinutes }} min</span><span aria-hidden="true">›</span></button>
+          } @else {
+            <a class="upcoming-row" routerLink="/planera" (click)="showDate(item.date)"><span class="upcoming-date"><strong>{{ formatDate(item.date, { weekday: 'short' }) }}</strong><small>{{ formatDate(item.date, { day: 'numeric', month: 'short' }) }}</small></span><span class="upcoming-name muted">Ingen middag planerad</span><span aria-hidden="true">›</span></a>
+          }
+        }
+      </div>
+    </section>
+    @if (todayRecipe()) { <div class="today-actions"><a routerLink="/hemma" class="secondary">Vad har jag hemma?</a><button class="secondary" (click)="generate()" [disabled]="generationDisabled()"><app-icon name="shuffle" />{{ generationLabel() }}</button></div> }
+    @if (!store.auth.user()) { <p class="demo-note">Du provar Middagstipset i demoläge. Din plan sparas i den här webbläsaren.</p> }
+  }
+  @if (screen() === 'plan') {
+    <div class="plan-workspace">
+    <section class="plan-heading"><h1>Planera</h1><a routerLink="/lunch" class="text-link lunch-link">Lunchlådor</a></section>
+    <app-plan-overview [recipe]="planPreviewRecipe()" [rangeLabel]="rangeLabel()" [planningDays]="store.planningDays()" [plannedCount]="plannedCount()" [missingCount]="missingDinnerCount()" [generationLabel]="generationLabel()" [generationDisabled]="generationDisabled()" [settings]="store.generationSettings()" (generated)="generate()" (settingsChanged)="store.setGenerationSettings($event)" (planningDaysChanged)="store.setPlanningDays($event)" />
+    <div class="plan-bulk-actions"><label class="clear-mode"><input type="checkbox" [ngModel]="clearingMode" (ngModelChange)="clearingMode = $event; selectedClearIds.set([])">Välj dagar att tömma</label>@if (clearingMode) { <button class="secondary" (click)="clearSelectedMeals()" [disabled]="selectedClearCount() === 0">Töm {{ selectedClearCount() }} {{ selectedClearCount() === 1 ? 'dag' : 'dagar' }}</button> }@if (store.pendingClearedMealCount()) { <button class="text-link undo-clear" (click)="undoClearMeals()">Ångra tömning</button> }</div>
+    <div class="meal-list">
+      @for (meal of store.plan().meals; track meal.id; let index = $index) {
+        <article class="meal-row" [class.incompatible]="!mealCompatible(meal)" [class.is-today]="isToday(meal.date)"><div class="meal-date">@if (clearingMode) { <label class="row-clear-choice"><input type="checkbox" [checked]="selectedClearIds().includes(meal.id)" (change)="toggleClearSelection(meal)" [disabled]="!canClearMeal(meal)" [attr.aria-label]="'Välj ' + dayName(meal.date) + ' för tömning'"></label> }<span class="day-label">{{ dayName(meal.date) }}</span><span>{{ formatDate(meal.date, { day: 'numeric', month: 'short' }) }}</span>@if (isToday(meal.date)) { <span class="today-marker">Idag</span> }<button class="people-button text-link" (click)="editMeal(meal)" [disabled]="meal.locked || meal.status === 'cooked'" [attr.aria-label]="'Personer och portioner för ' + dayName(meal.date)">Personer</button></div>
+          @if (mealRecipe(meal); as recipe) { <button class="meal-title card-open" (click)="open(recipe, meal)"><img [src]="recipe.image" alt="" [loading]="index < 2 ? 'eager' : 'lazy'"><span><h3>{{ recipe.name }}</h3><span class="muted">{{ recipe.totalMinutes }} min · {{ portions(meal) }} port. {{ meal.status === 'cooked' ? '· Lagad ✓' : '' }}</span><span class="meal-tags">@for (tag of mealTags(recipe); track tag) { <span>{{ tag }}</span> }</span></span></button> } @else { <div class="meal-title"><h3>Ingen middag vald</h3><p class="muted">Få ett middagsförslag eller välj ett <button class="text-link inline-recipe" (click)="chooseDinner(meal)">recept själv</button>.</p></div> }
+          <div class="meal-actions"><label class="time-filter" title="Max tid för genererade förslag"><span>Max tid</span><select [ngModel]="meal.maxMinutes" (ngModelChange)="store.setTime(meal.id, +$event)" [disabled]="meal.locked || meal.status === 'cooked'">@for (time of timeOptions(meal); track time) { <option [value]="time">{{ time }} min</option> }</select></label><button class="secondary" (click)="store.changeMeal(meal.id, { locked: !meal.locked })" [attr.aria-pressed]="meal.locked" [attr.aria-label]="(meal.locked ? 'Lås upp ' : 'Lås ') + dayName(meal.date)" [disabled]="!meal.recipeId || meal.status === 'cooked'"><app-icon [name]="meal.locked ? 'lock' : 'unlock'" />{{ meal.locked ? 'Låst' : 'Lås' }}</button><button class="secondary" (click)="changeDinner(meal)" [attr.aria-expanded]="meal.recipeId ? changeMenu() === meal.id : null" [disabled]="meal.locked || meal.status === 'cooked'" [attr.aria-label]="(meal.recipeId ? 'Byt middag för ' : 'Föreslå middag för ') + dayName(meal.date)">@if (meal.recipeId) { <app-icon name="shuffle" /> }{{ meal.recipeId ? 'Byt' : 'Föreslå' }}</button>@if (meal.status === 'cooked') { <button class="secondary" (click)="store.changeMeal(meal.id, { status: 'planned', cookedAt: undefined })">Ångra lagat</button> }</div>
+          @if (!mealCompatible(meal)) { <p class="error small meal-warning">Passar inte kostbehoven</p> } @if (changeMenu() === meal.id) { <div class="change-actions" role="group" [attr.aria-label]="'Byt middag för ' + dayName(meal.date)"><button class="secondary" (click)="swap(meal)"><app-icon name="shuffle" />Få nytt förslag</button><button class="secondary" (click)="chooseDinner(meal)"><app-icon name="book" />Välj själv</button><button class="secondary" (click)="clearDinner(meal)" [disabled]="!canClearMeal(meal)">Töm dagen</button></div> }
+        </article>
+      }
+    </div>
+    <p class="small muted">Max tid gäller nya förslag. Befintliga middagar behålls när tiden ändras. Om inget recept passar lämnas dagen tom.</p>
+    </div>
+  }
+  @if (screen() === 'recipes') {
+    <section class="page-intro"><div><p class="eyebrow">GOTT ATT HA NÄRA</p><h1>Recept för riktiga vardagar.</h1><p>{{ store.recipes.length }} recept att laga, spara som favorit och planera med.</p></div></section>
+    <div class="recipe-tools"><button class="secondary" (click)="createRecipe()">Skapa eget recept</button><a routerLink="/import" class="secondary">Importera recept</a></div><div class="recipe-filters"><label class="search-field"><span class="sr-only">Sök recept</span><span aria-hidden="true">⌕</span><input type="search" placeholder="Sök rätt eller tagg…" [ngModel]="query()" (ngModelChange)="query.set($event)"></label><button class="secondary" [attr.aria-pressed]="onlyFavorites()" (click)="toggleFavorites()">{{ onlyFavorites() ? 'Alla recept' : 'Mina favoriter ♡' }}</button></div>
+    <div class="recipe-grid">@for (recipe of filteredRecipes(); track recipe.id; let index = $index) { <article class="recipe-card"><div class="recipe-art" [style.background]="recipe.color + '20'"><button class="card-open" (click)="open(recipe)"><img [src]="recipe.image" [alt]="recipe.imageAlt" [loading]="index < 3 ? 'eager' : 'lazy'" [attr.fetchpriority]="index === 0 ? 'high' : 'auto'" width="1536" height="1024"></button><button class="favorite-button" [attr.aria-label]="'Favorit: ' + recipe.name" [attr.aria-pressed]="store.state()?.favoriteRecipeIds?.includes(recipe.id)" (click)="favorite(recipe)">{{ store.state()?.favoriteRecipeIds?.includes(recipe.id) ? '♥' : '♡' }}</button><span class="image-label">{{ imageLabel(recipe) }}</span></div><div class="recipe-card-body"><span class="eyebrow">{{ recipe.tags[0] ?? 'Eget recept' }} · {{ recipe.totalMinutes }} MIN</span><button class="card-open" (click)="open(recipe)"><h2>{{ recipe.name }}</h2></button><p>{{ recipe.description }}</p>@if (recipe.id.startsWith('custom:')) { <div class="recipe-tools"><button class="secondary" (click)="createRecipe(recipe)">Redigera</button><button class="secondary" (click)="exportRecipe(recipe)" [attr.aria-label]="'Exportera ' + recipe.name">Exportera</button></div> } @else { <button class="secondary" (click)="createVariant(recipe)">Gör egen variant</button> }<label class="plan-select">Lägg i planen<select aria-label="Välj dag för receptet" #daySelect (change)="addToPlan(recipe, daySelect.value); daySelect.value = ''"><option value="">Välj dag…</option>@for (meal of store.plan().meals; track meal.id; let index = $index) { <option [value]="meal.id" [disabled]="meal.locked || meal.status === 'cooked'">{{ dayName(meal.date) }} {{ formatDate(meal.date, { day: 'numeric', month: 'short' }) }}</option> }</select></label></div></article> } @empty { <div class="status-card"><h2>Inga recept hittades.</h2><p>Prova en annan sökning eller visa alla recept.</p></div> }</div>
+  }
+  @if (screen() === 'household') {
+    <section class="page-intro"><div><p class="eyebrow">RUNT SAMMA BORD</p><h1>{{ store.state()?.household?.name }}</h1><p>Här börjar din plan. Personer som äter är skilda från konton.</p></div></section>
+    <div class="household-grid"><section class="panel"><h2>Mitt hushåll</h2><form (ngSubmit)="rename()"><label for="household-name">Hushållets namn</label><div class="input-row"><input id="household-name" name="name" maxlength="80" [placeholder]="store.state()?.household?.name ?? ''" [ngModel]="newName()" (ngModelChange)="newName.set($event)"><button class="secondary" type="submit" [disabled]="!newName().trim()">Spara</button></div></form>@defer (on immediate) { <app-household-people /> } @defer (on immediate) { <app-household-presets /> }</section>
+      <section class="panel"><h2>Kontot</h2>@if (store.auth.user(); as user) { <p>Inloggad som <strong>{{ user.displayName }}</strong></p><p class="small muted">Hushåll och veckoplaner sparas i ditt privata Supabase-konto.</p><button class="secondary" (click)="signOut()">Logga ut</button> } @else { <p>Prova planeringen direkt. I demoläget sparas den i den här webbläsaren.</p><button class="google-button" (click)="signIn()" [disabled]="!store.auth.configured()"><span aria-hidden="true">G</span> Fortsätt med Google</button>@if (!store.auth.configured()) { <p class="small muted">Google-inloggning aktiveras när Supabase-projektet är anslutet.</p> } } @if (store.auth.error()) { <p class="error" role="alert">{{ store.auth.error() }}</p> }</section></div>
+  }
+  @if (screen() === 'shopping') {
+    <section class="page-intro"><div><p class="eyebrow">FRÅN PLAN TILL MATKASSE</p><h1>Handla till middagarna.</h1><p>Ingredienser för valda dagar, samlade efter avdelning. Lagade middagar räknas bort.</p></div></section>
+    <div class="shopping-range"><strong>{{ rangeLabel() }} · {{ store.planningDays() }} dagar</strong><a routerLink="/planera" class="text-link">Ändra period →</a></div><p class="small muted checklist-note">Avbockningar gäller just det här datumintervallet. När perioden flyttas fram visas en ny lista.</p>
+    @defer (on immediate) { <app-shopping-list /> }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
