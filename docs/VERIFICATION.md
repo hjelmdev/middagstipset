@@ -11,7 +11,7 @@
 - Lunchlådesidan kan skapa en fryst receptsats med kostkrav och 1–120 portioner, reservera luncher från planerad sats och kräva tillagad sats innan lunch markeras som uppäten. Källans kapacitet räknar även reserverade/uppätna luncher.
 - Planerade satser och luncher i perioden ingår i inköpsunderlaget utan dubbelräkning. Tillagning förbrukar kompatibelt känt skafferi en gång; ångra tillagning återför den frysta ledgern. Avräkning från skafferiet i inköpslistan kan stängas av.
 - Enhetsomräkning täcker kg↔g, l/dl/cl↔ml och ml↔msk/tsk. g↔ml och omräkning till/från stycken görs inte eftersom densitet eller styckstorlek inte är känd.
-- Projektägaren har bekräftat att Google-inloggning och privat Supabase-sparning fungerar. Den nya URL-importens Edge Function är inte deployad eller live-testad.
+- Projektägaren har bekräftat att Google-inloggning och privat Supabase-sparning fungerar. `import-recipe-url` är deployad till Middagstipset-projektet och aktiv i version 2 (2026-10-11). Autentiserat end-to-end-test från publicerade appen återstår.
 
 ## Manuell localhost-kontroll
 
@@ -40,11 +40,12 @@ Kvarvarande QA-begränsningar är backupfilens nedladdningshändelse via verktyg
 
 ## URL-import av recept
 
-- `pnpm test` innehåller kontroller av URL-/IP-validering, legacy-format för IPv4, publika IPv4/IPv6-adresser inklusive reserverad IPv6-dokumentation, DNS-resolved mixed-address-blockering, redirect-revalidering, redirectgräns, MIME-typ, svarsstorlek, timeout, korrekt JSON-LD-attribut och djupbegränsad iterativ parsning.
+- `pnpm test` innehåller kontroller av URL-/IP-validering, legacy-format för IPv4, publika IPv4/IPv6-adresser inklusive reserverad IPv6-dokumentation, DNS-resolved mixed-address-blockering, redirect-revalidering, redirectgräns, MIME-typ, svarsstorlek, timeout, korrekt JSON-LD-attribut (även HTML-entiteter) och djupbegränsad iterativ parsning.
 - URL-importen skickar inte webbförfrågan från webbläsaren. Edge Functionen verifierar Supabase-användaren, hämtar endast HTML och returnerar ett JSON-LD `Recipe`-objekt. Receptet laddas i samma redigerare som inklistrade recept.
 - Edge Functionen använder manuella HTTP(S)-anslutningar till den validerade IP-adressen; TLS kontrollerar fortfarande det ursprungliga värdnamnet. Redirects valideras var för sig.
-- Lokala tester täcker säkerhetslogik och svarshantering, inte Deno/Supabase-nätverksmiljö eller riktig webbplatscompatibilitet. Funktionen måste deployas och verifieras i Supabase innan URL-import fungerar i den publicerade appen.
-- Deno och Supabase CLI fanns inte installerade i arbetsmiljön, så `index.ts` har inte körts i en Edge Runtime och funktionen har inte deployats här. Den fristående delade hjälpfunktionen är TypeScript-kontrollerad.
+- Lokala tester täcker säkerhetslogik och svarshantering, inte Deno/Supabase-nätverksmiljö. Edge Functionen är deployad och aktiv i Supabase, men autentiserat end-to-end-test från publicerade appen återstår.
+- Supabase CLI 2.120.0 installerades i repot och användes för deploy. Deno finns inte installerat lokalt, så `index.ts` har inte körts i lokal Edge Runtime. Den fristående delade hjälpfunktionen är TypeScript-kontrollerad.
 - Ingen scraping-API används. Bilder hämtas inte, och källans vegetarisk-, gluten- eller allergenpåståenden räknas som overifierade.
+- Arlas receptsida för stuvade makaroner använder `application/ld&#x2B;json` i `script`-attributet. Importören avkodar nu entiteten innan JSON-LD-typen kontrolleras.
 - Funktionen har gränser för timeout, storlek och antal redirects men saknar per-användare rate limit; repot har inget befintligt sådant skydd att återanvända.
 

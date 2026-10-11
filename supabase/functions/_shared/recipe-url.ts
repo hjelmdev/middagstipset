@@ -25,13 +25,28 @@ export function extractJsonLdRecipe(html: string): Record<string, unknown> | nul
   for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
     // Attribute names must begin at a whitespace boundary; `data-type` is not `type`.
     const type = match[1].match(/\s+type\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
-    if ((type?.[1] ?? type?.[2] ?? type?.[3] ?? '').split(';', 1)[0].trim().toLowerCase() !== 'application/ld+json') continue;
+    const typeValue = decodeHtmlAttribute(type?.[1] ?? type?.[2] ?? type?.[3] ?? '');
+    if (typeValue.split(';', 1)[0].trim().toLowerCase() !== 'application/ld+json') continue;
     try {
       const found = findRecipe(JSON.parse(match[2].replace(/<!--|-->/g, '').trim()));
       if (found) return found;
     } catch { /* Ignore malformed JSON-LD and inspect other blocks. */ }
   }
   return null;
+}
+
+function decodeHtmlAttribute(value: string): string {
+  const named: Record<string, string> = { amp: '&', apos: "'", gt: '>', lt: '<', nbsp: '\u00a0', plus: '+', quot: '"' };
+  return value.replace(/&(#x[\da-f]+|#\d+|[a-z][a-z\d]+);/gi, (match, entity: string) => {
+    if (entity.startsWith('#')) {
+      const codePoint = entity[1]?.toLowerCase() === 'x'
+        ? Number.parseInt(entity.slice(2), 16)
+        : Number.parseInt(entity.slice(1), 10);
+      if (!Number.isInteger(codePoint) || codePoint <= 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) return '\ufffd';
+      return String.fromCodePoint(codePoint);
+    }
+    return named[entity.toLowerCase()] ?? match;
+  });
 }
 
 /** Resolve, validate and connect to the exact validated address, rechecking each redirect. */

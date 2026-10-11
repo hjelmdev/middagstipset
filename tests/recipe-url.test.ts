@@ -40,6 +40,8 @@ test('extracts direct JSON-LD Recipe and Recipe nested in arrays, graph and page
     { '@graph': [{ '@type': 'Recipe', name: 'I graf' }] },
   ])}</script>`);
   assert.equal(nested?.['name'], 'Inuti sida');
+  const encodedType = extractJsonLdRecipe(`<script type="application/ld&#x2B;json">${JSON.stringify({ '@type': 'Recipe', name: 'Arlas stuvade makaroner' })}</script>`);
+  assert.equal(encodedType?.['name'], 'Arlas stuvade makaroner');
   assert.equal(extractJsonLdRecipe('<h1>Recept utan JSON-LD</h1>'), null);
   assert.equal(extractJsonLdRecipe('<script data-type="application/ld+json">{"@type":"Recipe","name":"Ignorera"}</script>'), null);
 });

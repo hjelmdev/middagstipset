@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import type { AuthUser } from '../domain/models';
 import { loadRuntimeConfig } from './runtime-config';
 
@@ -27,17 +27,30 @@ export class AuthService implements AuthGateway {
       });
       this.configured.set(true);
       this.client.auth.onAuthStateChange((_event, session) => {
-        const user = session?.user;
-        this.user.set(user ? { id: user.id, displayName: String(user.user_metadata['full_name'] ?? 'Mitt konto'), email: user.email } : null);
+        const user = session?.user ?? null;
+        this.user.set(toAuthUser(user));
         if (user) this.restoreReturnPath();
       });
       const { data, error } = await this.client.auth.getSession();
       if (error) throw error;
-      const user = data.session?.user;
-      this.user.set(user ? { id: user.id, displayName: String(user.user_metadata['full_name'] ?? 'Mitt konto'), email: user.email } : null);
+      const user = data.session?.user ?? null;
+      this.user.set(toAuthUser(user));
       if (user) this.restoreReturnPath();
     } catch { this.error.set('Kunde inte ansluta till kontot. Kontrollera inställningarna och försök igen.'); }
     finally { this.ready.set(true); }
+  }
+  async refreshUser(): Promise<AuthUser | null> {
+    if (!this.client) return null;
+    try {
+      const { data, error } = await this.client.auth.getSession();
+      if (error) throw error;
+      const user = toAuthUser(data.session?.user ?? null);
+      this.user.set(user);
+      return user;
+    } catch {
+      this.error.set('Kunde inte kontrollera inloggningen. Försök igen eller logga in via Profil.');
+      return null;
+    }
   }
   async signInWithGoogle(): Promise<void> {
     this.error.set('');
@@ -59,4 +72,8 @@ export class AuthService implements AuthGateway {
     if (error) throw error;
     this.user.set(null);
   }
+}
+
+function toAuthUser(user: User | null): AuthUser | null {
+  return user ? { id: user.id, displayName: String(user.user_metadata['full_name'] ?? 'Mitt konto'), email: user.email } : null;
 }

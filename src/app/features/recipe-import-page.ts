@@ -59,8 +59,13 @@ export class RecipeImportPage {
     }
 
     const client = this.store.auth.client;
-    if (!client || !this.store.auth.user()) {
-      this.error.set('URL-import kräver ett anslutet Supabase-konto. Klistra in recepttexten i rutan nedan så länge.');
+    if (!client) {
+      this.error.set('URL-importen är inte ansluten till Supabase just nu. Du kan klistra in recepttexten i rutan nedan.');
+      return;
+    }
+    // Re-read the persisted Supabase session in case the UI signal lagged behind an OAuth refresh.
+    if (!await this.store.auth.refreshUser()) {
+      this.error.set('Du behöver vara inloggad via Profil för att importera en receptlänk. Du kan också klistra in recepttexten nedan.');
       return;
     }
 

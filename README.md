@@ -39,7 +39,7 @@ pnpm test
 
 Utan värden i `public/config.json` kör appen i demoläge och sparar ett lokalt testhushåll i webbläsarens localStorage. Med projektets publika Supabase-konfiguration används Google Auth och privat hushållssparning i Postgres. Projektägaren har bekräftat att inloggning och sparning fungerar. Konto och hushåll är separata begrepp i appens modell; ett hushåll kan ha flera personer som äter utan egna konton.
 
-Supabase-klienten och den första Postgres-migrationen finns. Projektägaren har skapat och konfigurerat Supabase-projektet, Google OAuth och verifierat inloggning/sparning. URL-importens Edge Function är kodad i repot men inte deployad/verifierad live. För en ny miljö:
+Supabase-klienten och den första Postgres-migrationen finns. Projektägaren har skapat och konfigurerat Supabase-projektet, Google OAuth och verifierat inloggning/sparning. URL-importens Edge Function är deployad till Middagstipsets Supabase-projekt; hela det autentiserade importflödet testas från den publicerade appen. För en ny miljö:
 
 1. Applicera `supabase/migrations/202610080001_initial.sql` i projektet.
 2. Aktivera Google som Supabase Auth-provider och konfigurera OAuth callback i Google Cloud.
