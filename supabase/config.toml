@@ -1,0 +1,2 @@
+[functions.import-recipe-url]
+verify_jwt = true

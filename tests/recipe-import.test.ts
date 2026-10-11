@@ -95,6 +95,32 @@ test('reads JSON-LD Recipe from graph and nested HowTo sections, ignoring extern
   assert.equal('image' in draft, false);
 });
 
+test('reads direct Recipe JSON-LD and string or array instructions without importing diet claims', () => {
+  const direct = parseRecipeImport(JSON.stringify({
+    '@type': 'Recipe', name: 'Tomatpasta', description: 'Snabb middag', recipeYield: '3 portioner',
+    prepTime: 'PT10M', totalTime: 'PT25M', recipeIngredient: ['salt', '1 dl grädde'],
+    recipeInstructions: ['Skär tomaterna.', 'Koka upp grädden.'], vegetarian: true, suitableForDiet: 'GlutenFreeDiet',
+  }));
+  assert.equal(direct.name, 'Tomatpasta');
+  assert.deepEqual(direct.steps.map(step => step.text), ['Skär tomaterna.', 'Koka upp grädden.']);
+  assert.equal(direct.ingredients[0].quantity, null);
+  assert.equal(direct.ingredients[0].unit, null);
+  assert.ok(direct.warnings.some(warning => warning.includes('mängd eller enhet')));
+  assert.equal('vegetarian' in direct, false);
+  assert.equal('suitableForDiet' in direct, false);
+});
+
+test('incomplete structured recipes produce review warnings instead of guessed values', () => {
+  const draft = parseRecipeImport(JSON.stringify({ '@type': 'Recipe', name: 'Ofullständig', recipeIngredient: ['salt'], recipeInstructions: { '@type': 'HowToStep', text: 'Smaka av.' } }));
+  assert.equal(draft.servings, null);
+  assert.equal(draft.totalMinutes, null);
+  assert.equal(draft.activeMinutes, null);
+  assert.ok(draft.warnings.some(warning => warning.includes('Portionsantal')));
+  assert.ok(draft.warnings.some(warning => warning.includes('Total tillagningstid')));
+  assert.ok(draft.ingredients[0].needsUnitReview);
+  assert.throws(() => parseRecipeImport(JSON.stringify({ '@type': 'Recipe', recipeIngredient: ['salt'] })), /saknar namn/);
+});
+
 test('HTML without JSON-LD is stripped to readable text without executing scripts', () => {
   const draft = parseRecipeImport(`<article><h1>Omelett</h1><h2>Ingredienser</h2><ul><li>2 st ägg</li></ul><h2>Tillagning</h2><p>Vispa äggen.</p><script>alert(1)</script></article>`);
   assert.equal(draft.name, 'Omelett');

@@ -6,10 +6,10 @@ Det här dokumentet beskriver vad som finns i appen i nuläget och vad som åter
 
 | Etapp | Status i appen nu |
 |---|---|
-| 1 – lokal grund och middagsplanering | Klar i demoläge: dagens middag, rullande plan, recept, lokal lagring och navigation. Supabase Auth, Google OAuth, RLS och drift är inte live-verifierade. |
-| 2 – hushåll, recept och vardagsflöde | Klar för lokal användning: personer/kostbehov, privata recept, text-/JSON-import, historik och inköpslista. Hushåll mellan flera konton ingår inte. |
+| 1 – grund och middagsplanering | Klar i demoläge och med Google-inloggning/privat Supabase-sparning som projektägaren bekräftat: dagens middag, rullande plan, recept, lagring och navigation. |
+| 2 – hushåll, recept och vardagsflöde | Klar: personer/kostbehov, privata recept, text-/JSON-import, historik och inköpslista. URL-importens kod finns; Edge Function behöver deployas och live-verifieras. Hushåll mellan flera konton ingår inte. |
 | 3 – skafferi, matchning och storkok | Delvis klar: mängder i skafferiet, receptunderskott, frivillig lageravräkning med ångra, samt enreceptsstorkok upp till 120 portioner med lunchreservationer. Upptäckt av publika recept och den bredare sociala delen saknas. |
-| Senare vision | Återstår: delade hushåll/grupper, publika och upphittningsbara recept, sociala funktioner och moderering, URL-import med backend, bild-/mediauppladdning och AI-bilder i appen, mer avancerad batch- och resthantering samt produktionsdrift. |
+| Senare vision | Återstår: delade hushåll/grupper, publika och upphittningsbara recept, sociala funktioner och moderering, bild-/mediauppladdning och AI-bilder i appen, mer avancerad batch- och resthantering samt fortsatt produktionsdrift. |
 
 Prisfunktioner är uttryckligen nedprioriterade i visionen och är inte ett nästa steg för den här leveransen. UX-justeringarna kring generering när recept saknas, tömning/ångring av plan och den kompakta Planera-toppen är verifierade.
 
@@ -31,12 +31,12 @@ Prisfunktioner är uttryckligen nedprioriterade i visionen och är inte ett näs
 - Hushållspresets sparar vanliga sällskap och kan användas på en middag utan att autospara ändringen.
 - Planera-filter för vegetariskt, favoriter och max tillagningstid gäller enbart nya förslag.
 - Privata egna recept kan skapas och redigeras. Ett startrecept kan kopieras som privat variant med nytt recept-ID; originalet ligger kvar.
-- Recepttext och stödd JSON kan klistras in, granskas och redigeras innan ett privat recept sparas. Importen hämtar inte recept från en webbadress.
+- Recepttext och stödd JSON kan klistras in, granskas och redigeras innan ett privat recept sparas. En egen Edge Function hämtar HTML från URL och extraherar strukturerad JSON-LD Recipe; utkastet granskas innan privat sparning. Bilder och diet-/allergenpåståenden hämtas inte som verifierad information. Funktionen är inte bekräftad deployad.
 - Privata recept kan exporteras som JSON.
 - Historik skiljer planerade datum från uttryckligen lagade middagar. Tillagning sparar en fryst kopia av recept, deltagare och portioner.
 - Lunchlådor kan reservera middagars extra portioner. Portionsbehovet fryses vid reservationen; senare ändring av personens portionsfaktor ändrar inte den reserverade mängden.
 - Backup/export och validerad restore använder hela hushållets state. Backupfilen kan innehålla privata recept, personuppgifter och planering och är inte auth-skyddad eller krypterad.
-- Första Supabase-migrationen och Auth-/repository-klientkod finns i projektet, men livekonfiguration är inte gjord.
+- Första Supabase-migrationen och Auth-/repository-klientkod finns i projektet. Projektägaren har bekräftat fungerande Google-inloggning och sparning i privat Supabase-konto.
 
 ### Etapp 3 – avgränsat skafferi
 
@@ -50,17 +50,20 @@ Prisfunktioner är uttryckligen nedprioriterade i visionen och är inte ett näs
 - Inköpslistan kan ta med hela den okokta middagskällan en gång, även om källdatumet ligger utanför middagsintervallet, när en planerad lunch i intervallet är beroende av den. Källdeltagarna bevaras så kända glutenfria varianter används.
 - Timers och stöd för att hålla skärmen vaken finns där webbläsaren tillåter det. Detta är inte verifierat på fysisk enhet.
 
-Senaste gemensamma verifiering: `pnpm test` 103/103 och `pnpm build` utan varningar (initial bundle 577,58 kB). Se `VERIFICATION.md` för manuella flöden och kvarvarande kontroll.
+Senaste verifiering: `pnpm test` 112/112 och `pnpm build` utan varningar (initial bundle 577,75 kB). Se `VERIFICATION.md` för manuella flöden och kvarvarande kontroll.
 
 ## Återstående arbete
 
-### Supabase och Google-inloggning
+### Supabase Edge Function
 
-Projektägaren behöver skapa Supabase-projektet, applicera migrationen, konfigurera Google OAuth och ange projektets URL och publika nyckel i `public/config.json`. Inget riktigt konto, Supabase-projekt, OAuth eller RLS har ännu testats. Därefter behöver login/logout, RLS och sparning verifieras i ett liveprojekt. Fram till dess är demoläget det fungerande startläget; auth och drift ska inte betraktas som produktionsverifierade.
+- Installera/logga in med Supabase CLI, länka projektet med `supabase link --project-ref <projektref>` och kör `supabase functions deploy import-recipe-url` från repots rot. Verifiera sedan ett autentiserat anrop från GitHub Pages.
+- Om appens origin ändras (till exempel när en egen domän kopplas) behöver den läggas till i funktionens CORS-lista.
+- Manuell livekontroll behövs för externa receptsidor, DNS-/redirect-skydd, timeout och felmeddelanden. Lokala tester bekräftar hjälpfunktioner, inte nätverksmiljön i Supabase Edge Runtime.
+- Ingen extern scraping-tjänst används; URL-fetch ansluter till den DNS-validerade IP-adressen och hanterar redirects manuellt. Faktisk deploy återstår att kontrollera.
+- Funktionen begränsar tid, svarsstorlek och redirects men har ingen per-användare rate limit ännu; projektet saknar ett befintligt mönster för sådan begränsning.
 
 ### Funktioner som inte är byggda
 
-- Importera recept via URL/backend.
 - AI-funktioner och AI-bildgenerering i appen; användaruppladdning av media.
 - Publicera, hitta och dela publika recept socialt; likes, kommentarer och moderering.
 - Delade hushåll, grupper och samarbete mellan konton.
@@ -76,7 +79,7 @@ Varje punkt kräver separat omfattning, datamodell och acceptanskriterier innan 
 - **Planera → Anpassa förslagen:** filter för kommande receptförslag.
 - **Planera → Lunchlådor:** reservera lunch från extra portioner vid en middag eller ett storkok.
 - **Recept → Skapa eget recept / Gör egen variant:** privata recept och kopior av startrecept med eget ID.
-- **Recept → Importera recept / Exportera:** granska inklistrad text eller stödd JSON före sparning, eller exportera privat recept som JSON. URL hämtas ännu inte.
+- **Recept → Importera recept / Exportera:** importera Recipe JSON-LD från en URL via Edge Function eller klistra in text/stödd JSON, granska och redigera innan privat sparning. Exportera privata recept som JSON.
 - **Idag → Vad har jag hemma?:** skafferimatchning.
 - **Profil → Historik:** lagade middagar med frysta uppgifter från tillagningstillfället.
 - **Profil → Säkerhetskopiering (`/data`):** exportera och återställa hela hushållets state.

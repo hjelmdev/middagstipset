@@ -2,7 +2,7 @@
 
 ## Automatisk kontroll
 
-- Gemensam slutkontroll: `pnpm test` 103/103; `pnpm build` utan varningar. Initial bundle är 577,58 kB.
+- Senaste slutkontroll: `pnpm test` 113/113; `pnpm build` utan varningar. Initial bundle är 577,75 kB.
 - Luna implementerade domän- och persistencefunktioner och skrev riktade kärntester.
 - CookBatch-domän/store fick också en separat riktad körning på 29/29 tester och `tsc --noEmit`.
 
@@ -11,7 +11,7 @@
 - Lunchlådesidan kan skapa en fryst receptsats med kostkrav och 1–120 portioner, reservera luncher från planerad sats och kräva tillagad sats innan lunch markeras som uppäten. Källans kapacitet räknar även reserverade/uppätna luncher.
 - Planerade satser och luncher i perioden ingår i inköpsunderlaget utan dubbelräkning. Tillagning förbrukar kompatibelt känt skafferi en gång; ångra tillagning återför den frysta ledgern. Avräkning från skafferiet i inköpslistan kan stängas av.
 - Enhetsomräkning täcker kg↔g, l/dl/cl↔ml och ml↔msk/tsk. g↔ml och omräkning till/från stycken görs inte eftersom densitet eller styckstorlek inte är känd.
-- Inget riktigt Supabase-konto/projekt, Google OAuth eller RLS-flöde har testats.
+- Projektägaren har bekräftat att Google-inloggning och privat Supabase-sparning fungerar. Den nya URL-importens Edge Function är inte deployad eller live-testad.
 
 ## Manuell localhost-kontroll
 
@@ -30,11 +30,21 @@ Root kontrollerade följande flöden i localhost:
 
 ## Kvarvarande manuell kontroll
 
-Kvarvarande QA-begränsningar är backupfilens nedladdningshändelse via verktyget samt verifiering mot ett riktigt Supabase-projekt av Auth, Google OAuth och RLS.
+Kvarvarande QA-begränsningar är backupfilens nedladdningshändelse via verktyget samt livekontroll av nya URL-importfunktionen mot Supabase och externa receptsidor.
 
 ## Kort översikt på Idag och linjerade filter
 
 - Idag visar som standard högst sju kommande dagar, begränsat av den valda planeringsperioden. Länken visar hela periodens dagantal. Generering och Planera behåller hela perioden.
 - Filterkontrollerna har verifierats vid 320, 520 och 1280 px: inget horisontellt överflöde, 44 px kontrollhöjd och gemensam baslinje per rad. De minsta skärmarna visar selectfälten över full bredd.
 - Produktionsbygget passerade utan varningar efter ändringarna.
+
+## URL-import av recept
+
+- `pnpm test` innehåller kontroller av URL-/IP-validering, legacy-format för IPv4, publika IPv4/IPv6-adresser inklusive reserverad IPv6-dokumentation, DNS-resolved mixed-address-blockering, redirect-revalidering, redirectgräns, MIME-typ, svarsstorlek, timeout, korrekt JSON-LD-attribut och djupbegränsad iterativ parsning.
+- URL-importen skickar inte webbförfrågan från webbläsaren. Edge Functionen verifierar Supabase-användaren, hämtar endast HTML och returnerar ett JSON-LD `Recipe`-objekt. Receptet laddas i samma redigerare som inklistrade recept.
+- Edge Functionen använder manuella HTTP(S)-anslutningar till den validerade IP-adressen; TLS kontrollerar fortfarande det ursprungliga värdnamnet. Redirects valideras var för sig.
+- Lokala tester täcker säkerhetslogik och svarshantering, inte Deno/Supabase-nätverksmiljö eller riktig webbplatscompatibilitet. Funktionen måste deployas och verifieras i Supabase innan URL-import fungerar i den publicerade appen.
+- Deno och Supabase CLI fanns inte installerade i arbetsmiljön, så `index.ts` har inte körts i en Edge Runtime och funktionen har inte deployats här. Den fristående delade hjälpfunktionen är TypeScript-kontrollerad.
+- Ingen scraping-API används. Bilder hämtas inte, och källans vegetarisk-, gluten- eller allergenpåståenden räknas som overifierade.
+- Funktionen har gränser för timeout, storlek och antal redirects men saknar per-användare rate limit; repot har inget befintligt sådant skydd att återanvända.
 

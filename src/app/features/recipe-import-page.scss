@@ -1,7 +1,7 @@
 :host { display: block; min-width: 0; color: var(--ink); }
 
-button, textarea { font: inherit; }
-button:focus-visible, textarea:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; }
+button, textarea, input { font: inherit; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; }
 
 .import-page {
   width: min(100% - 32px, 880px);
@@ -23,14 +23,20 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid var(--terracot
 .eyebrow { margin: 0 0 8px; color: var(--terracotta); font-size: 13px; font-weight: 750; letter-spacing: .08em; }
 h1 { margin: 0; font-size: clamp(30px, 4vw, 40px); line-height: 1.1; letter-spacing: -.035em; }
 .import-header>p:last-child { max-width: 680px; color: var(--muted); line-height: 1.55; }
-.import-panel { display: grid; gap: 14px; padding: clamp(16px, 4vw, 28px); background: var(--paper); border: 1px solid var(--line); border-radius: 18px; }
+.import-panel { display: grid; gap: 14px; margin-top: 14px; padding: clamp(16px, 4vw, 28px); background: var(--paper); border: 1px solid var(--line); border-radius: 18px; }
+.import-panel h2 { margin: 0; font-size: 1.2rem; }
 label { display: grid; gap: 8px; font-weight: 700; }
+input { width: 100%; min-width: 0; min-height: 48px; box-sizing: border-box; padding: 12px 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; font-size: 16px; }
 textarea { width: 100%; min-width: 0; min-height: 280px; box-sizing: border-box; padding: 14px; resize: vertical; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 12px; font-size: 16px; line-height: 1.5; }
 .helper { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .error { margin: 0; padding: 12px; color: #832d1b; background: #fff0eb; border: 1px solid #efb7a6; border-radius: 10px; }
 .actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 .secondary-button { display: inline-flex; align-items: center; justify-content: center; color: var(--forest); background: var(--forest-soft); text-decoration: none; }
 .primary-button { color: white; background: var(--forest); }
+.primary-button:disabled { opacity: .65; cursor: progress; }
+.source-review { width: min(100% - 32px, 880px); margin: 18px auto; padding: 15px 17px; border: 1px solid var(--line); border-left: 4px solid var(--terracotta); border-radius: 10px; background: var(--cream); color: var(--ink); line-height: 1.5; overflow-wrap: anywhere; }
+.source-review p + p { margin-top: 8px; color: var(--muted); }
+.source-review a { color: var(--forest); }
 
 @media (max-width: 480px) {
   .import-page { width: min(100% - 16px, 880px); padding-top: 12px; }

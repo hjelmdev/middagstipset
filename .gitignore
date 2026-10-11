@@ -6,3 +6,4 @@ dist/
 !.env.example
 src/app/core/runtime-config.local.ts
 artifacts/
+/supabase/.temp/

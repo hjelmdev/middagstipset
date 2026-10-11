@@ -78,9 +78,14 @@ function findRecipe(value: unknown): Record<string, unknown> | undefined {
   const isRecipeJson = typeof value['name'] === 'string'
     && (Array.isArray(value['ingredients']) || Array.isArray(value['recipeIngredient']))
     && (Array.isArray(value['steps']) || Array.isArray(value['recipeInstructions']));
-  if ((isRecipeType || isRecipeJson) && typeof value['name'] === 'string') return value;
+  if (isRecipeType || (isRecipeJson && typeof value['name'] === 'string')) return value;
   for (const key of ['@graph', 'itemListElement', 'mainEntity', 'mainEntityOfPage', 'item', 'recipe']) {
     const found = findRecipe(value[key]);
+    if (found) return found;
+  }
+  for (const [key, nested] of Object.entries(value)) {
+    if (['@graph', 'itemListElement', 'mainEntity', 'mainEntityOfPage', 'item', 'recipe'].includes(key)) continue;
+    const found = findRecipe(nested);
     if (found) return found;
   }
   return undefined;
@@ -100,7 +105,9 @@ function draftFromStructured(recipe: Record<string, unknown>): RecipeImportDraft
   const cook = parseDuration(recipe['cookTime']);
   const total = parseDuration(recipe['totalTime'] ?? recipe['totalMinutes']) ?? (prep !== null && cook !== null ? prep + cook : prep ?? cook);
   if (!ingredients.length) warnings.push('Ingrediensrader hittades inte. Lägg till dem manuellt.');
+  if (ingredients.some(ingredient => ingredient.needsUnitReview)) warnings.push('En eller flera ingredienser saknar tydlig mängd eller enhet. Kontrollera dem i formuläret.');
   if (!steps.length) warnings.push('Tillagningssteg hittades inte. Lägg till minst ett steg.');
+  if (!plainValue(recipe['description'])) warnings.push('Beskrivning saknas och behöver skrivas innan receptet kan sparas.');
   if (servings === null) warnings.push('Portionsantal saknas och behöver anges.');
   if (total === null) warnings.push('Total tillagningstid saknas och behöver anges.');
   if (prep === null) warnings.push('Aktiv tid saknas och behöver anges.');
