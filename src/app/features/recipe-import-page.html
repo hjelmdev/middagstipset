@@ -14,6 +14,7 @@
       <h1 id="import-title">Importera recept</h1>
       <p>Klistra in recepttext, Recipe-JSON eller Recipe-JSON-LD. Granska och komplettera utkastet innan du sparar det privat.</p>
     </header>
+    @if (error()) { <p class="error import-error" role="alert">{{ error() }}</p> }
 
     @if (store.auth.canImportRecipeUrl()) {
       <section class="import-panel url-panel" aria-labelledby="url-title">
@@ -24,7 +25,7 @@
         <div class="actions">
           <button class="primary-button" type="button" [disabled]="urlLoading()" (click)="importFromUrl()">{{ urlLoading() ? 'Hämtar recept…' : 'Hämta från länk' }}</button>
         </div>
-        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+        @if (urlLoading()) { <p class="helper" role="status">Hämtar och granskar receptsidan. Det kan ta några sekunder.</p> }
       </section>
     }
 
