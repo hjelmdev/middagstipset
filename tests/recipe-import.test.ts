@@ -110,6 +110,43 @@ test('reads direct Recipe JSON-LD and string or array instructions without impor
   assert.equal('suitableForDiet' in direct, false);
 });
 
+test('imports the Recipe JSON-LD shape returned by Arla URL import', () => {
+  const response = {
+    recipe: {
+      '@context': 'https://schema.org/',
+      '@type': 'Recipe',
+      type: 'Recipe',
+      name: 'Stuvade makaroner',
+      description: 'En klassisk rätt.',
+      totalTime: 'PT15M',
+      prepTime: 'PT15M',
+      cookTime: 'PT00M',
+      recipeYield: '4 port',
+      recipeIngredient: [
+        '2 msk Svenskt Smör från Arla®', '2 msk vetemjöl', '5 dl Arla® Lantmjölk, ekologisk',
+        '1 tärning grönsaksbuljong', '5 dl makaroner', '2 dl Kvibille® Riven ost cheddar', 'salt och peppar',
+      ],
+      recipeInstructions: [{
+        '@type': 'HowToSection',
+        itemListElement: [
+          { '@type': 'HowToStep', text: 'Smält smör och vispa ner mjöl och mjölk.' },
+          { '@type': 'HowToStep', text: 'Koka makaronerna enligt anvisning.' },
+          { '@type': 'HowToStep', text: 'Rör ner stuvning och ost.' },
+        ],
+      }],
+    },
+    sourceUrl: 'https://www.arla.se/recept/stuvade-makaroner/',
+    finalUrl: 'https://www.arla.se/recept/stuvade-makaroner/',
+  };
+
+  const draft = parseRecipeImport(JSON.stringify(response.recipe));
+  assert.equal(draft.name, 'Stuvade makaroner');
+  assert.equal(draft.servings, 4);
+  assert.equal(draft.totalMinutes, 15);
+  assert.equal(draft.ingredients.length, 7);
+  assert.equal(draft.steps.length, 3);
+});
+
 test('incomplete structured recipes produce review warnings instead of guessed values', () => {
   const draft = parseRecipeImport(JSON.stringify({ '@type': 'Recipe', name: 'Ofullständig', recipeIngredient: ['salt'], recipeInstructions: { '@type': 'HowToStep', text: 'Smaka av.' } }));
   assert.equal(draft.servings, null);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PlannerStore } from '../core/planner.store';
@@ -17,6 +17,7 @@ import { RecipeEditorComponent } from './recipe-editor';
 export class RecipeImportPage {
   readonly store = inject(PlannerStore);
   private readonly router = inject(Router);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   readonly source = signal('');
   readonly url = signal('');
@@ -88,6 +89,9 @@ export class RecipeImportPage {
       this.error.set(`${message || 'Receptet kunde inte hämtas eller tolkas från länken.'} Du kan försöka igen eller klistra in recepttexten i rutan nedan.`);
     } finally {
       this.urlLoading.set(false);
+      // Supabase resolves through fetch; explicitly render the result even if the callback
+      // completed outside Angular's normal change-detection turn.
+      this.changeDetector.detectChanges();
     }
   }
 
