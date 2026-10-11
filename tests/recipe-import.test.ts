@@ -144,6 +144,12 @@ test('imports the Recipe JSON-LD shape returned by Arla URL import', () => {
   assert.equal(draft.servings, 4);
   assert.equal(draft.totalMinutes, 15);
   assert.equal(draft.ingredients.length, 7);
+  assert.deepEqual(
+    [draft.ingredients[3].name, draft.ingredients[3].quantity, draft.ingredients[3].unit, draft.ingredients[3].needsUnitReview],
+    ['grönsaksbuljong', 1, 'st', false],
+  );
+  assert.equal(draft.ingredients[6].needsUnitReview, true, 'salt och peppar saknar en angiven mängd');
+  assert.ok(draft.warnings.some(warning => warning.includes('huvudingrediens')));
   assert.equal(draft.steps.length, 3);
 });
 

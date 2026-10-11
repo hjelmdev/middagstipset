@@ -42,10 +42,12 @@
           <input id="recipe-servings" name="servings" type="number" min="1" max="100" step="1" required [(ngModel)]="servings" />
         </label>
         <label class="field" for="recipe-main-ingredient">
-          <span>Huvudingrediens</span>
-          <select id="recipe-main-ingredient" name="mainIngredient" [(ngModel)]="mainIngredient">
+          <span>Huvudingrediens <span class="required-mark" aria-hidden="true">*</span></span>
+          <select id="recipe-main-ingredient" name="mainIngredient" required [(ngModel)]="mainIngredient">
+            <option [ngValue]="null" disabled>Välj huvudingrediens</option>
             @for (main of mainIngredients; track main) { <option [ngValue]="main">{{ mainIngredientLabels[main] }}</option> }
           </select>
+          @if (importDraft()) { <small>Välj själv vad rätten främst består av. Importen gissar inte.</small> }
         </label>
         <label class="field" for="recipe-total-time">
           <span>Total tid i minuter <span class="required-mark" aria-hidden="true">*</span></span>

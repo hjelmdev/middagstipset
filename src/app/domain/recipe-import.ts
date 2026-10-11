@@ -111,7 +111,7 @@ function draftFromStructured(recipe: Record<string, unknown>): RecipeImportDraft
   if (servings === null) warnings.push('Portionsantal saknas och behöver anges.');
   if (total === null) warnings.push('Total tillagningstid saknas och behöver anges.');
   if (prep === null) warnings.push('Aktiv tid saknas och behöver anges.');
-  warnings.push('Huvudingrediens importerades inte. Kontrollera och välj rätt i formuläret.');
+  warnings.push('Välj huvudingrediens i formuläret. Den går inte att avgöra säkert från importen.');
   return {
     name,
     description: plainValue(recipe['description']),
@@ -189,7 +189,7 @@ function normalizeUnit(quantity: number | null, sourceUnit: string): { quantity:
   if (['cl', 'centiliter', 'centilitre'].includes(unit)) return { quantity: quantity * 10, unit: 'ml' };
   if (['dl', 'deciliter', 'decilitre'].includes(unit)) return { quantity: quantity * 100, unit: 'ml' };
   if (['l', 'liter', 'litre'].includes(unit)) return { quantity: quantity * 1000, unit: 'ml' };
-  if (['st', 'styck', 'stycken', 'pcs', 'piece', 'pieces'].includes(unit)) return { quantity, unit: 'st' };
+  if (['st', 'styck', 'stycken', 'pcs', 'piece', 'pieces', 'tärning', 'tärningar'].includes(unit)) return { quantity, unit: 'st' };
   if (['msk', 'matsked', 'matskedar', 'tbsp'].includes(unit)) return { quantity, unit: 'msk' };
   if (['tsk', 'tesked', 'teskedar', 'tsp'].includes(unit)) return { quantity, unit: 'tsk' };
   return null;

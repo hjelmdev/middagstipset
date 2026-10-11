@@ -35,6 +35,7 @@ textarea { width: 100%; min-width: 0; min-height: 280px; box-sizing: border-box;
 .primary-button { color: white; background: var(--forest); }
 .primary-button:disabled { opacity: .65; cursor: progress; }
 .source-review { width: min(100% - 32px, 880px); margin: 18px auto; padding: 15px 17px; border: 1px solid var(--line); border-left: 4px solid var(--terracotta); border-radius: 10px; background: var(--cream); color: var(--ink); line-height: 1.5; overflow-wrap: anywhere; }
+.source-review p:first-child { display: flex; flex-wrap: wrap; column-gap: 4px; }
 .source-review p + p { margin-top: 8px; color: var(--muted); }
 .source-review a { color: var(--forest); }
 

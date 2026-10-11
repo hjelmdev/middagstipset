@@ -56,7 +56,7 @@ export class RecipeEditorComponent {
   servings: number | null = 4;
   totalMinutes: number | null = 30;
   activeMinutes: number | null = 15;
-  mainIngredient: Recipe['mainIngredient'] = 'vegetables';
+  mainIngredient: Recipe['mainIngredient'] | null = 'vegetables';
   vegetarian = false;
   ingredients: IngredientDraft[] = [this.newIngredient()];
   steps: string[] = [''];
@@ -79,6 +79,7 @@ export class RecipeEditorComponent {
       && Number.isInteger(this.totalMinutes) && (this.totalMinutes ?? 0) > 0
       && Number.isInteger(this.activeMinutes) && (this.activeMinutes ?? 0) > 0
       && (this.activeMinutes ?? Infinity) <= (this.totalMinutes ?? 0)
+      && this.mainIngredient !== null
       && this.ingredients.length > 0
       && this.ingredients.every((ingredient) => ingredient.name.trim() && Number.isFinite(ingredient.quantity) && (ingredient.quantity ?? 0) > 0 && !!ingredient.unit && !ingredient.needsUnitReview)
       && this.steps.some((step) => step.trim())
@@ -166,7 +167,7 @@ export class RecipeEditorComponent {
       servings: this.servings!,
       totalMinutes: this.totalMinutes!,
       activeMinutes: this.activeMinutes!,
-      mainIngredient: this.mainIngredient,
+      mainIngredient: this.mainIngredient!,
       tags,
       dietaryNeeds,
       glutenStrategy: glutenFree ? 'naturally-free' : keepExistingGlutenStrategy ? glutenMetadata!.glutenStrategy : 'unsupported',
@@ -222,7 +223,9 @@ export class RecipeEditorComponent {
     this.servings = draft.servings;
     this.totalMinutes = draft.totalMinutes;
     this.activeMinutes = draft.activeMinutes;
-    this.mainIngredient = 'vegetables';
+    // A URL import cannot reliably identify the recipe's main ingredient. Require
+    // the person reviewing it to choose one instead of silently claiming vegetables.
+    this.mainIngredient = null;
     this.vegetarian = false;
     const catalog = buildIngredientCatalog(RECIPES);
     this.ingredients = draft.ingredients.length ? draft.ingredients.map((ingredient) => ({
