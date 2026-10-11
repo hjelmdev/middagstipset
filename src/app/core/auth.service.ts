@@ -23,11 +23,20 @@ export class AuthService implements AuthGateway {
   readonly error = signal('');
   client: SupabaseClient | null = null;
   async initialize(): Promise<void> {
+    const callbackUrl = new URL(location.href);
+    const oauthCode = callbackUrl.searchParams.get('code');
+    const oauthFlowId = callbackUrl.searchParams.get('flow_id');
+    const oauthError = callbackUrl.searchParams.get('error_description') ?? callbackUrl.searchParams.get('error');
     try {
       const config = await loadRuntimeConfig();
-      if (!config) return;
+      if (!config) {
+        if (oauthCode) this.reportOAuthCallbackFailure();
+        return;
+      }
       this.client = createClient(config.supabaseUrl, config.supabasePublishableKey, {
-        auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true },
+        // Angular's hash router can rewrite the query string during startup. Capture and exchange
+        // the PKCE callback ourselves so the router cannot erase Google's `?code=` first.
+        auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: true },
       });
       this.configured.set(true);
       this.client.auth.onAuthStateChange((event, session) => {
@@ -36,13 +45,36 @@ export class AuthService implements AuthGateway {
         if (event === 'SIGNED_IN' && user) this.clearSignInPending();
         if (user) this.restoreReturnPath();
       });
+      if (oauthError) {
+        this.error.set('Google kunde inte slutföra inloggningen. Försök igen.');
+        this.clearOAuthCallbackParameters();
+      } else if (oauthCode) {
+        const { data, error } = await this.client.auth.exchangeCodeForSession(oauthCode, oauthFlowId ? { flowId: oauthFlowId } : undefined);
+        if (error || !data.session) {
+          this.reportOAuthCallbackFailure();
+          return;
+        }
+        this.clearOAuthCallbackParameters();
+      }
       const { data, error } = await this.client.auth.getSession();
       if (error) throw error;
       const user = data.session?.user ?? null;
       this.user.set(toAuthUser(user));
       if (user) this.restoreReturnPath();
-    } catch { this.error.set('Kunde inte ansluta till kontot. Kontrollera inställningarna och försök igen.'); }
+    } catch {
+      if (oauthCode) this.reportOAuthCallbackFailure();
+      else this.error.set('Kunde inte ansluta till kontot. Kontrollera inställningarna och försök igen.');
+    }
     finally { this.ready.set(true); }
+  }
+  private reportOAuthCallbackFailure(): void {
+    this.error.set('Google skickade dig tillbaka, men inloggningen kunde inte slutföras. Starta om inloggningen i samma webbläsare som Middagstipset och försök igen.');
+    this.clearOAuthCallbackParameters();
+  }
+  private clearOAuthCallbackParameters(): void {
+    const url = new URL(location.href);
+    for (const parameter of ['code', 'flow_id', 'error', 'error_description', 'error_code']) url.searchParams.delete(parameter);
+    history.replaceState(history.state, '', url.toString());
   }
   async refreshUser(): Promise<AuthUser | null> {
     if (!this.client) return null;
