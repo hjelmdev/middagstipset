@@ -29,6 +29,9 @@ Deno.serve(async request => {
     const client = createClient(supabaseUrl, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data, error } = await client.auth.getUser(authorization.replace(/^Bearer\s+/i, ''));
     if (error || !data.user) return json({ error: 'Din inloggning behöver förnyas. Logga in igen.' }, 401, headers);
+    if (data.user.email?.trim().toLowerCase() !== 'hjelm.adam@gmail.com') {
+      return json({ error: 'Receptimport från länk är endast tillgänglig för administratörskontot. Klistra in recepttexten här i stället.' }, 403, headers);
+    }
   } catch {
     return json({ error: 'Inloggningen kunde inte verifieras just nu.' }, 503, headers);
   }

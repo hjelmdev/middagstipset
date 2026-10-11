@@ -12,26 +12,28 @@
       <a class="back-button" routerLink="/recept"><span aria-hidden="true">←</span> Tillbaka</a>
       <p class="eyebrow">DITT RECEPTBIBLIOTEK</p>
       <h1 id="import-title">Importera recept</h1>
-      <p>Importera från en receptlänk eller klistra in recepttext, Recipe-JSON eller Recipe-JSON-LD. Granska och komplettera utkastet innan du sparar det privat.</p>
+      <p>Klistra in recepttext, Recipe-JSON eller Recipe-JSON-LD. Granska och komplettera utkastet innan du sparar det privat.</p>
     </header>
 
-    <section class="import-panel url-panel" aria-labelledby="url-title">
-      <label for="recipe-url"><span id="url-title">Receptlänk</span>
-        <input id="recipe-url" name="recipeUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://exempel.se/recept" [disabled]="urlLoading()" [ngModel]="url()" (ngModelChange)="url.set($event)">
-      </label>
-      <p class="helper">Länken hämtas säkert av Middagstipsets serverfunktion. Bilder hämtas inte från källsidan.</p>
-      <div class="actions">
-        <button class="primary-button" type="button" [disabled]="urlLoading()" (click)="importFromUrl()">{{ urlLoading() ? 'Hämtar recept…' : 'Hämta från länk' }}</button>
-      </div>
-      @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-    </section>
+    @if (store.auth.canImportRecipeUrl()) {
+      <section class="import-panel url-panel" aria-labelledby="url-title">
+        <label for="recipe-url"><span id="url-title">Receptlänk</span>
+          <input id="recipe-url" name="recipeUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://exempel.se/recept" [disabled]="urlLoading()" [ngModel]="url()" (ngModelChange)="url.set($event)">
+        </label>
+        <p class="helper">Länken hämtas säkert av Middagstipsets serverfunktion. Bilder hämtas inte från källsidan.</p>
+        <div class="actions">
+          <button class="primary-button" type="button" [disabled]="urlLoading()" (click)="importFromUrl()">{{ urlLoading() ? 'Hämtar recept…' : 'Hämta från länk' }}</button>
+        </div>
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+      </section>
+    }
 
     <section class="import-panel" aria-labelledby="paste-title">
       <h2 id="paste-title">Eller klistra in receptet</h2>
       <label for="recipe-source"><span>Receptinnehåll</span>
         <textarea id="recipe-source" name="recipeSource" rows="16" [disabled]="urlLoading()" [ngModel]="source()" (ngModelChange)="source.set($event)" placeholder="Klistra in receptet här…"></textarea>
       </label>
-      <p class="helper">Om länken inte går att läsa kan du klistra in innehållet här. Bilder från källan hämtas inte.</p>
+      <p class="helper">Klistra in receptet här. Bilder från källan hämtas inte.</p>
       <p class="helper">För vanlig text fungerar rubrikerna Namn, Ingredienser och Tillagning. Du granskar och kompletterar allt innan receptet sparas.</p>
       <div class="actions">
         <button class="secondary-button" type="button" [disabled]="urlLoading()" (click)="cancelImport()">Avbryt</button>
