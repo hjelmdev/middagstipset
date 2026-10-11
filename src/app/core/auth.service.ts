@@ -43,7 +43,9 @@ export class AuthService implements AuthGateway {
         const user = session?.user ?? null;
         this.user.set(toAuthUser(user));
         if (event === 'SIGNED_IN' && user) this.clearSignInPending();
-        if (user) this.restoreReturnPath();
+        // Route restoration belongs to the completed sign-in only. Token refreshes and
+        // other auth events must never navigate away from an in-progress screen.
+        if (event === 'SIGNED_IN' && user) this.restoreReturnPath();
       });
       if (oauthError) {
         this.error.set('Google kunde inte slutföra inloggningen. Försök igen.');

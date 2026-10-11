@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PlannerStore } from '../core/planner.store';
@@ -17,7 +17,6 @@ import { RecipeEditorComponent } from './recipe-editor';
 export class RecipeImportPage {
   readonly store = inject(PlannerStore);
   private readonly router = inject(Router);
-  private readonly changeDetector = inject(ChangeDetectorRef);
 
   readonly source = signal('');
   readonly url = signal('');
@@ -64,8 +63,10 @@ export class RecipeImportPage {
       this.error.set('URL-importen är inte ansluten till Supabase just nu. Du kan klistra in recepttexten i rutan nedan.');
       return;
     }
-    // Re-read the persisted Supabase session in case the UI signal lagged behind an OAuth refresh.
-    if (!await this.store.auth.refreshUser()) {
+    // The page itself is gated to the account that may use URL import. Avoid calling
+    // getSession() here: a token refresh can trigger auth listeners and remount this route,
+    // clearing the URL input while the import request is in flight.
+    if (!this.store.auth.canImportRecipeUrl()) {
       this.error.set('Du behöver vara inloggad via Profil för att importera en receptlänk. Du kan också klistra in recepttexten nedan.');
       return;
     }
@@ -89,9 +90,6 @@ export class RecipeImportPage {
       this.error.set(`${message || 'Receptet kunde inte hämtas eller tolkas från länken.'} Du kan försöka igen eller klistra in recepttexten i rutan nedan.`);
     } finally {
       this.urlLoading.set(false);
-      // Supabase resolves through fetch; explicitly render the result even if the callback
-      // completed outside Angular's normal change-detection turn.
-      this.changeDetector.detectChanges();
     }
   }
 
