@@ -131,7 +131,7 @@
         <span class="no-sources-icon" aria-hidden="true">＋</span>
         <div>
         <h2 id="no-sources-title">Ingen lunchkälla har lediga portioner</h2>
-          <p>Planera ett storkok här eller välj Personer och extra portioner i middagsplanen. Källan måste vara tillagad innan lunchlådan markeras som uppäten.</p>
+          <p>Planera ett storkok här eller välj Personer och extra portioner i middagsplanen. Välj sedan datum och vilka portioner du vill reservera.</p>
           <a routerLink="/planera">Öppna planeringen</a>
         </div>
       </section>
@@ -156,13 +156,6 @@
                 <small>Källa: {{ sourceKindLabel(row.sourceKind) }} · {{ row.sourceDate ? formatDate(row.sourceDate) : 'saknas' }} · {{ row.sourceIsPrepared ? 'Tillagad' : 'Inte tillagad ännu' }}</small>
               </div>
               <div class="lunch-row-actions">
-                @if (row.sourceIsPrepared && row.lunch.date <= store.todayDate()) {
-                  <button class="secondary-button" type="button" (click)="markEaten(row)">Markera uppäten</button>
-                } @else if (!row.sourceIsPrepared) {
-                  <span class="action-hint">Markera {{ row.sourceKind === 'batch' ? 'storkoket' : 'middagen' }} som tillagad först.</span>
-                } @else {
-                  <span class="action-hint">Kan markeras som uppäten på lunchdagen.</span>
-                }
                 <button class="remove-lunch" type="button" (click)="removeLunch(row.lunch.id)" [attr.aria-label]="'Ta bort lunchlåda ' + formatDate(row.lunch.date)">Ta bort</button>
               </div>
             </li>
@@ -177,31 +170,22 @@
       <section class="lunch-list-section history-section" aria-labelledby="history-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">TIDIGARE</p>
-            <h2 id="history-title">Uppätna och passerade</h2>
+          <p class="eyebrow">TIDIGARE</p>
+          <h2 id="history-title">Tidigare lunchlådor</h2>
           </div>
           <span class="row-count">{{ historicalLunches().length }}</span>
         </div>
         <ul class="lunch-list historical-list">
           @for (row of historicalLunches(); track row.lunch.id) {
-            <li class="lunch-row" [class.is-eaten]="row.lunch.status === 'eaten'">
+            <li class="lunch-row">
               @if (row.image) { <img class="lunch-image" [src]="row.image" [alt]="row.imageAlt ?? ''" loading="lazy"> }
               <div class="lunch-row-copy">
                 <strong>{{ row.sourceName }}</strong>
                 <span>{{ formatDate(row.lunch.date) }} · {{ formatPortions(row.lunch.portions) }} {{ row.lunch.portions === 1 ? 'portion' : 'portioner' }}</span>
-                <small>{{ row.lunch.status === 'eaten' ? 'Uppäten' : 'Planerad · datumet har passerat' }} · Källa: {{ sourceKindLabel(row.sourceKind) }} · {{ row.sourceDate ? formatDate(row.sourceDate) : 'saknas' }}</small>
+                <small>Tidigare · Källa: {{ sourceKindLabel(row.sourceKind) }} · {{ row.sourceDate ? formatDate(row.sourceDate) : 'saknas' }}</small>
               </div>
               <div class="lunch-row-actions">
-                @if (row.lunch.status === 'eaten') {
-                  <button class="remove-lunch" type="button" (click)="undoEaten(row.lunch.id)">Ångra uppäten</button>
-                } @else {
-                  @if (row.sourceIsPrepared && row.lunch.date <= store.todayDate()) {
-                    <button class="secondary-button" type="button" (click)="markEaten(row)">Markera uppäten</button>
-                  } @else if (!row.sourceIsPrepared) {
-                    <span class="action-hint">Markera {{ row.sourceKind === 'batch' ? 'storkoket' : 'middagen' }} som tillagad först.</span>
-                  }
-                  <button class="remove-lunch" type="button" (click)="removeLunch(row.lunch.id)" [attr.aria-label]="'Ta bort lunchlåda ' + formatDate(row.lunch.date)">Ta bort</button>
-                }
+                <button class="remove-lunch" type="button" (click)="removeLunch(row.lunch.id)" [attr.aria-label]="'Ta bort lunchlåda ' + formatDate(row.lunch.date)">Ta bort</button>
               </div>
             </li>
           }

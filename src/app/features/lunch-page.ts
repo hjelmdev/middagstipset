@@ -145,16 +145,6 @@ export class LunchPage {
     this.message.set(error || 'Lunchplanen är borttagen.');
   }
 
-  markEaten(row: LunchDisplayRow): void {
-    const error = this.store.markLunchEaten(row.lunch.id);
-    this.message.set(error || 'Lunchlådan är markerad som uppäten.');
-  }
-
-  undoEaten(id: string): void {
-    this.store.undoLunchEaten(id);
-    this.message.set('Markeringen som uppäten är ångrad.');
-  }
-
   formatDate(date: string): string {
     return new Intl.DateTimeFormat('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' })
       .format(new Date(`${date}T12:00:00`));
