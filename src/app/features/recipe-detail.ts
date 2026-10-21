@@ -24,14 +24,21 @@ export class RecipeDetailComponent {
   readonly people = input.required<Person[]>();
   readonly extraPortions = input(0);
   readonly canMarkCooked = input(false);
+  readonly batchPortions = signal<number | null>(null);
 
   readonly closed = output<void>();
   readonly cooked = output<void>();
 
-  readonly servingCount = computed(() => portionCount(this.people(), this.extraPortions()));
+  readonly recipePeople = computed(() => {
+    const portions = this.batchPortions();
+    if (portions === null) return this.people();
+    const dietaryNeeds = [...new Set(this.people().flatMap(person => person.dietaryNeeds))];
+    return [{ id: 'batch-recipe', name: 'Storkok', portionFactor: portions, dietaryNeeds }];
+  });
+  readonly servingCount = computed(() => this.batchPortions() ?? portionCount(this.people(), this.extraPortions()));
   readonly supportsDietaryNeeds = computed(() => supportsNeeds(this.recipe(), this.people()));
   readonly scaledIngredients = computed(() => this.supportsDietaryNeeds()
-    ? scaleIngredients(this.recipe(), this.people(), this.extraPortions())
+    ? scaleIngredients(this.recipe(), this.recipePeople(), this.batchPortions() === null ? this.extraPortions() : 0)
     : []);
   readonly needsGlutenFree = computed(() => this.people().some((person) => person.dietaryNeeds.includes('gluten-free')));
   readonly hasVegetarianNeed = computed(() => this.people().some((person) => person.dietaryNeeds.includes('vegetarian')));
@@ -85,6 +92,14 @@ export class RecipeDetailComponent {
   setViewMode(mode: 'compact' | 'stepwise'): void {
     this.viewMode.set(mode);
     this.currentStepIndex.set(0);
+  }
+
+  toggleBatchMode(): void {
+    this.batchPortions.update(portions => portions === null ? Math.max(1, this.recipe().servings * 2) : null);
+  }
+
+  setBatchPortions(value: number): void {
+    if (Number.isFinite(value) && value >= 1 && value <= 120) this.batchPortions.set(value);
   }
 
   previousStep(): void {

@@ -138,6 +138,51 @@ input:focus-visible {
   font-weight: 750;
 }
 
+.batch-cook-control {
+  display: grid;
+  grid-template-columns: max-content minmax(150px, max-content);
+  align-items: end;
+  gap: 10px 14px;
+  margin-top: 16px;
+}
+
+.batch-cook-toggle {
+  min-height: 42px;
+  padding: 8px 13px;
+  color: var(--forest);
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--forest-soft);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.batch-portion-field {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.batch-portion-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 10px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.batch-cook-control p {
+  grid-column: 1 / -1;
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .dietary-badges {
   margin-top: 14px;
 }
@@ -510,6 +555,10 @@ input:focus-visible {
   .recipe-header {
     gap: 18px;
     padding-bottom: 22px;
+  }
+
+  .batch-cook-control {
+    grid-template-columns: 1fr 120px;
   }
 
   .recipe-visual {

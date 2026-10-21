@@ -22,6 +22,18 @@
         <span><strong>{{ recipe().activeMinutes }}</strong> min aktivt</span>
         <span><strong>{{ servingCount() }}</strong> {{ servingCount() === 1 ? 'portion' : 'portioner' }}</span>
       </div>
+      <div class="batch-cook-control">
+        <button class="batch-cook-toggle" type="button" [attr.aria-expanded]="batchPortions() !== null" (click)="toggleBatchMode()">
+          {{ batchPortions() === null ? 'Gör storkok på den här' : 'Visa vanliga portioner' }}
+        </button>
+        @if (batchPortions() !== null) {
+          <label class="batch-portion-field">
+            <span>Antal portioner</span>
+            <input type="number" min="1" max="120" step="1" inputmode="numeric" [value]="batchPortions()" (input)="setBatchPortions(+$any($event.target).value)">
+          </label>
+          <p>Mängderna i receptet räknas om automatiskt.</p>
+        }
+      </div>
       <div class="dietary-badges" aria-label="Kostinformation">
         @if (showGlutenFreeBadge()) {
           <span class="dietary-badge">Glutenfritt recept</span>
