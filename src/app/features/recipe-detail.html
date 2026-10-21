@@ -118,37 +118,11 @@
       @if (wakeLockMessage()) {
         <p class="wake-lock-message" role="status">{{ wakeLockMessage() }}</p>
       }
-      @if (hasTimers()) {
-        <p class="timer-lifecycle-note">Timers stannar när receptet stängs.</p>
-      }
-
       @if (needsGlutenFree() && recipe().glutenStrategy === 'split-component') {
         <p class="method-reminder">Tillaga eventuell glutenfri pasta separat i eget kokkärl med egna redskap.</p>
       }
       @if (needsGlutenFree() && recipe().glutenStrategy === 'whole-dish') {
         <p class="method-reminder">Använd glutenfria alternativ till alla ingredienser med gluten i hela rätten, även mjöl, pasta eller plattor.</p>
-      }
-
-      @if (viewMode() === 'stepwise' && backgroundTimers().length > 0) {
-        <aside class="background-timers" aria-label="Övriga timers">
-          @for (timer of backgroundTimers(); track timer.stepIndex) {
-            <div class="background-timer-row">
-              <span class="timer-label">Steg {{ timer.stepIndex + 1 }}</span>
-              <span class="timer-countdown">{{ timerDisplay(timer.stepIndex, timer.minutes) }}</span>
-              <div class="timer-actions">
-                @if (timerStatus(timer.stepIndex) === 'running') {
-                  <button type="button" class="timer-button pause-timer" (click)="pauseTimer(timer.stepIndex, timer.minutes)">Pausa</button>
-                } @else if (timerStatus(timer.stepIndex) !== 'done') {
-                  <button type="button" class="timer-button start-timer" (click)="startTimer(timer.stepIndex, timer.minutes)">{{ timerStatus(timer.stepIndex) === 'paused' ? 'Fortsätt' : 'Starta timer' }}</button>
-                }
-                <button type="button" class="timer-button reset-timer" (click)="resetTimer(timer.stepIndex, timer.minutes)">Återställ</button>
-                @if (timerStatus(timer.stepIndex) === 'done') {
-                  <span class="timer-complete" role="status">Tiden är klar</span>
-                }
-              </div>
-            </div>
-          }
-        </aside>
       }
 
       @if (viewMode() === 'compact') {
@@ -158,25 +132,6 @@
               <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
               <div class="step-copy">
                 <p>{{ step.text }}</p>
-                @if (step.timerMinutes) {
-                  <div class="step-timer">
-                    <div class="step-timer-heading">
-                      <span class="timer-label">Timer · steg {{ index + 1 }}</span>
-                      <span class="timer-countdown">{{ timerDisplay(index, step.timerMinutes) }}</span>
-                    </div>
-                    <div class="timer-actions">
-                      @if (timerStatus(index) === 'running') {
-                        <button type="button" class="timer-button pause-timer" (click)="pauseTimer(index, step.timerMinutes)">Pausa</button>
-                      } @else if (timerStatus(index) !== 'done') {
-                        <button type="button" class="timer-button start-timer" (click)="startTimer(index, step.timerMinutes)">{{ timerStatus(index) === 'paused' ? 'Fortsätt' : 'Starta timer' }}</button>
-                      }
-                      <button type="button" class="timer-button reset-timer" (click)="resetTimer(index, step.timerMinutes)">Återställ</button>
-                      @if (timerStatus(index) === 'done') {
-                        <span class="timer-complete" role="status">Tiden är klar</span>
-                      }
-                    </div>
-                  </div>
-                }
               </div>
             </li>
           }
@@ -186,25 +141,6 @@
           <p class="step-progress">Steg {{ currentStepNumber }} av {{ recipe().steps.length }}</p>
           <p class="guided-step-text">{{ recipe().steps[currentStepIndex()].text }}</p>
         </div>
-        @if (recipe().steps[currentStepIndex()].timerMinutes; as timerMinutes) {
-          <div class="step-timer guided-timer">
-            <div class="step-timer-heading">
-              <span class="timer-label">Timer · steg {{ currentStepNumber }}</span>
-              <span class="timer-countdown">{{ timerDisplay(currentStepIndex(), timerMinutes) }}</span>
-            </div>
-            <div class="timer-actions">
-              @if (timerStatus(currentStepIndex()) === 'running') {
-                <button type="button" class="timer-button pause-timer" (click)="pauseTimer(currentStepIndex(), timerMinutes)">Pausa</button>
-              } @else if (timerStatus(currentStepIndex()) !== 'done') {
-                <button type="button" class="timer-button start-timer" (click)="startTimer(currentStepIndex(), timerMinutes)">{{ timerStatus(currentStepIndex()) === 'paused' ? 'Fortsätt' : 'Starta timer' }}</button>
-              }
-              <button type="button" class="timer-button reset-timer" (click)="resetTimer(currentStepIndex(), timerMinutes)">Återställ</button>
-              @if (timerStatus(currentStepIndex()) === 'done') {
-                <span class="timer-complete" role="status">Tiden är klar</span>
-              }
-            </div>
-          </div>
-        }
         <nav class="step-navigation" aria-label="Stegnavigering">
           <button type="button" class="secondary-button" [disabled]="currentStepIndex() === 0" (click)="previousStep()">Föregående</button>
           <button type="button" class="primary-button" [disabled]="currentStepIndex() >= recipe().steps.length - 1" (click)="nextStep()">Nästa steg</button>

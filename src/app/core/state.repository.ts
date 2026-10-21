@@ -85,8 +85,7 @@ function isRecipe(value: unknown, requireCustomId = false): value is Recipe {
   });
   if (!ingredientsValid) return false;
 
-  const stepsValid = value['steps'].every((step: unknown) => isRecord(step) && isNonEmptyString(step['text']) &&
-    (step['timerMinutes'] === undefined || (Number.isFinite(step['timerMinutes']) && (step['timerMinutes'] as number) > 0)));
+  const stepsValid = value['steps'].every((step: unknown) => isRecord(step) && isNonEmptyString(step['text']));
   if (!stepsValid) return false;
 
   return value['glutenStrategy'] !== 'naturally-free' ||

@@ -25,7 +25,6 @@ export interface Ingredient {
 }
 export interface RecipeStep {
   text: string;
-  timerMinutes?: number;
 }
 export interface Recipe {
   id: string;
