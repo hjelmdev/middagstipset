@@ -15,20 +15,20 @@
     @if (todayRecipe(); as recipe) {
       <section class="today-card">
         <div class="today-image"><img [src]="recipe.image" [alt]="recipe.imageAlt"><span class="image-label">{{ imageLabel(recipe) }}</span></div>
-        <div class="today-copy">@if (todayMeal().status === 'cooked') { <span class="pill">Lagad ✓</span> }<h2>{{ recipe.name }}</h2><div class="meta"><span class="time-badge">{{ recipe.totalMinutes }} min</span><span>{{ portions(todayMeal()) }} {{ portions(todayMeal()) === 1 ? 'portion' : 'portioner' }}</span></div><button class="primary" (click)="open(recipe, todayMeal())">{{ todayMeal().status === 'cooked' ? 'Visa receptet' : 'Börja laga' }} <span aria-hidden="true">→</span></button></div>
+        <div class="today-copy">@if (todayMeal().status === 'cooked') { <span class="pill">Lagad ✓</span> }<h2>{{ recipe.name }}</h2><div class="meta"><span class="time-badge">{{ recipe.totalMinutes }} min</span><span>{{ portions(todayMeal()) }} {{ portions(todayMeal()) === 1 ? 'portion' : 'portioner' }}</span></div><button class="primary" (click)="open(recipe, todayMeal())">{{ todayMeal().status === 'cooked' ? 'Visa receptet' : 'Börja laga' }}</button></div>
       </section>
     } @else {
-      <section class="welcome-card"><div class="welcome-art"><img [src]="store.recipes[0].image" [alt]="store.recipes[0].imageAlt"><span class="image-label">{{ imageLabel(store.recipes[0]) }}</span></div><div class="welcome-copy"><span class="pill">Ingen middag planerad idag</span><h2>Planera middagar från idag.</h2><p>Få middagsförslag till de tomma dagarna. Dina valda middagar är kvar.</p><button class="primary" (click)="generate()" [disabled]="generationDisabled()">{{ generationLabel() }} <span aria-hidden="true">→</span></button><p class="small">Utgår från {{ portions() }} {{ portions() === 1 ? 'portion' : 'portioner' }}.</p></div></section>
+      <section class="welcome-card"><div class="welcome-art"><img [src]="store.recipes[0].image" [alt]="store.recipes[0].imageAlt"><span class="image-label">{{ imageLabel(store.recipes[0]) }}</span></div><div class="welcome-copy"><span class="pill">Ingen middag planerad idag</span><h2>Planera middagar från idag.</h2><p>Få middagsförslag till de tomma dagarna. Dina valda middagar är kvar.</p><button class="primary" (click)="generate()" [disabled]="generationDisabled()">{{ generationLabel() }}</button><p class="small">Utgår från {{ portions() }} {{ portions() === 1 ? 'portion' : 'portioner' }}.</p></div></section>
     }
     <section class="upcoming-section" aria-labelledby="upcoming-title">
-      <div class="section-top"><h2 id="upcoming-title">Kommande middagar</h2><span class="small muted">{{ rangeLabel() }}</span><a routerLink="/planera" class="text-link" (click)="goToToday()">Visa alla {{ store.planningDays() }} dagar →</a></div>
+      <div class="section-top"><h2 id="upcoming-title">Kommande middagar</h2><span class="small muted">{{ rangeLabel() }}</span><a routerLink="/planera" class="text-link" (click)="goToToday()">Visa alla {{ store.planningDays() }} dagar</a></div>
       @if (upcomingTotalCount() > upcomingPreviewCount()) { <p class="small muted">Visar {{ upcomingPreviewCount() }} av {{ upcomingTotalCount() }} kommande middagar.</p> }
       <div class="upcoming-list">
         @for (item of upcomingMeals(); track item.date) {
           @if (item.recipe; as recipe) {
-            <button class="upcoming-row" (click)="open(recipe, item.meal)"><span class="upcoming-date"><strong>{{ formatDate(item.date, { weekday: 'short' }) }}</strong><small>{{ formatDate(item.date, { day: 'numeric', month: 'short' }) }}</small></span><span class="upcoming-name">{{ recipe.name }}</span><span class="upcoming-time">{{ recipe.totalMinutes }} min</span><span aria-hidden="true">›</span></button>
+            <button class="upcoming-row" (click)="open(recipe, item.meal)"><span class="upcoming-date"><strong>{{ formatDate(item.date, { weekday: 'short' }) }}</strong><small>{{ formatDate(item.date, { day: 'numeric', month: 'short' }) }}</small></span><span class="upcoming-name">{{ recipe.name }}</span><span class="upcoming-time">{{ recipe.totalMinutes }} min</span></button>
           } @else {
-            <a class="upcoming-row" routerLink="/planera" (click)="showDate(item.date)"><span class="upcoming-date"><strong>{{ formatDate(item.date, { weekday: 'short' }) }}</strong><small>{{ formatDate(item.date, { day: 'numeric', month: 'short' }) }}</small></span><span class="upcoming-name muted">Ingen middag planerad</span><span aria-hidden="true">›</span></a>
+            <a class="upcoming-row" routerLink="/planera" (click)="showDate(item.date)"><span class="upcoming-date"><strong>{{ formatDate(item.date, { weekday: 'short' }) }}</strong><small>{{ formatDate(item.date, { day: 'numeric', month: 'short' }) }}</small></span><span class="upcoming-name muted">Ingen middag planerad</span></a>
           }
         }
       </div>
@@ -65,7 +65,7 @@
   }
   @if (screen() === 'shopping') {
     <section class="page-intro"><div><p class="eyebrow">FRÅN PLAN TILL MATKASSE</p><h1>Handla till middagarna.</h1><p>Ingredienser för valda dagar, samlade efter avdelning. Lagade middagar räknas bort.</p></div></section>
-    <div class="shopping-range"><strong>{{ rangeLabel() }} · {{ store.planningDays() }} dagar</strong><a routerLink="/planera" class="text-link">Ändra period →</a></div><p class="small muted checklist-note">Avbockningar gäller just det här datumintervallet. När perioden flyttas fram visas en ny lista.</p>
+    <div class="shopping-range"><strong>{{ rangeLabel() }} · {{ store.planningDays() }} dagar</strong><a routerLink="/planera" class="text-link">Ändra period</a></div><p class="small muted checklist-note">Avbockningar gäller just det här datumintervallet. När perioden flyttas fram visas en ny lista.</p>
     @defer (on immediate) { <app-shopping-list /> }
   }
 }

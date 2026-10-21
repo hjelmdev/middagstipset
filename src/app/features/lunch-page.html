@@ -96,7 +96,7 @@
             <button class="source-recipe" type="button" (click)="openRecipe(source)" [attr.aria-label]="'Visa recept: ' + source.recipe.name">
               @if (source.recipe.image) { <img [src]="source.recipe.image" alt="" loading="lazy"> }
               <span><strong>{{ source.recipe.name }}</strong><small>{{ sourceKindLabel(source.kind) }} · {{ formatDate(effectiveSourceDate(source)) }} · {{ sourceIsPrepared(source) ? 'Tillagad' : 'Planerad' }}</small></span>
-              <span class="source-open" aria-hidden="true">Visa recept →</span>
+              <span class="source-open">Visa recept</span>
             </button>
           <p class="source-capacity">{{ formatPortions(source.availablePortions) }} av {{ formatPortions(source.capacityPortions) }} portioner återstår att reservera.</p>
           </div>
@@ -131,8 +131,8 @@
         <span class="no-sources-icon" aria-hidden="true">＋</span>
         <div>
         <h2 id="no-sources-title">Ingen lunchkälla har lediga portioner</h2>
-          <p>Planera ett storkok här eller välj Personer → extra portioner i middagsplanen. Källan måste vara tillagad innan lunchlådan markeras som uppäten.</p>
-          <a routerLink="/planera">Öppna planeringen <span aria-hidden="true">→</span></a>
+          <p>Planera ett storkok här eller välj Personer och extra portioner i middagsplanen. Källan måste vara tillagad innan lunchlådan markeras som uppäten.</p>
+          <a routerLink="/planera">Öppna planeringen</a>
         </div>
       </section>
     }

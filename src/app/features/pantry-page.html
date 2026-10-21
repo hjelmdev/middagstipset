@@ -103,7 +103,6 @@
                 <span class="pantry-recipe-name">{{ match.recipe.name }}</span>
                 <span class="pantry-recipe-meta">{{ match.recipe.totalMinutes }} min · {{ attentionCount(match) ? attentionCount(match) + ' att kontrollera' : 'registrerade mängder täcker receptet' }}</span>
               </span>
-              <span class="open-arrow" aria-hidden="true">›</span>
             </button>
             @if (match.missing.length || unknownPantryIngredients(match).length) {
               <div class="missing-ingredients">
