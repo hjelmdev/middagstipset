@@ -16,7 +16,11 @@
           </button>
         }
         <a routerLink="/hushall">Hushåll och konto</a><a routerLink="/historik">Middagshistorik</a><a routerLink="/data">Säkerhetskopiering</a>
-        <fieldset class="palette-picker"><legend>Accentfärg</legend><button (click)="setPalette('coral')" [attr.aria-pressed]="palette() === 'coral'"><span class="color-dot coral" aria-hidden="true"></span>Terrakotta</button><button (click)="setPalette('blue')" [attr.aria-pressed]="palette() === 'blue'"><span class="color-dot blue" aria-hidden="true"></span>Blå</button><button (click)="setPalette('green')" [attr.aria-pressed]="palette() === 'green'"><span class="color-dot green" aria-hidden="true"></span>Grön</button></fieldset>
+        <fieldset class="palette-picker"><legend>Tema</legend>
+          <button (click)="setPalette('coral')" [attr.aria-pressed]="palette() === 'coral'"><span class="color-dot coral" aria-hidden="true"></span><span class="theme-copy"><strong>Kryddigt</strong><small>Krämvitt och rostrött</small></span></button>
+          <button (click)="setPalette('blue')" [attr.aria-pressed]="palette() === 'blue'"><span class="color-dot blue" aria-hidden="true"></span><span class="theme-copy"><strong>Hav</strong><small>Svalt och klart</small></span></button>
+          <button (click)="setPalette('green')" [attr.aria-pressed]="palette() === 'green'"><span class="color-dot green" aria-hidden="true"></span><span class="theme-copy"><strong>Salvia</strong><small>Ljust och lugnt</small></span></button>
+        </fieldset>
       </div>
     }
   </div>
